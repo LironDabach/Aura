@@ -76,6 +76,22 @@ describe("Posts CRUD API", () => {
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty("_id", createdPostId);
     }));
+    test("gets posts by user id", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app).get(`/post/user/${userId}`);
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body.length).toBeGreaterThan(0);
+        response.body.forEach((post) => {
+            expect(post.senderID).toBe(userId);
+        });
+    }));
+    test("gets posts by user id returns empty array for user without posts", () => __awaiter(void 0, void 0, void 0, function* () {
+        const noPostsUserId = new mongoose_1.default.Types.ObjectId().toString();
+        const response = yield (0, supertest_1.default)(app).get(`/post/user/${noPostsUserId}`);
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body).toHaveLength(0);
+    }));
     test("updates a post", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
             .put(`/post/${createdPostId}`)
@@ -186,12 +202,12 @@ describe("BaseController error handling", () => {
     test("create returns 500 when model.create throws", () => __awaiter(void 0, void 0, void 0, function* () {
         const model = { create: jest.fn().mockRejectedValue(new Error("db")) };
         const controller = new baseController_1.default(model);
-        const req = { body: { title: "x" } };
+        const req = { params: {}, body: { title: "x" } };
         const res = makeRes();
         const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
         yield controller.create(req, res);
         expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.send).toHaveBeenCalledWith("Error: Can't create post");
+        expect(res.send).toHaveBeenCalledWith("Error: Can't create entity");
         errorSpy.mockRestore();
     }));
     test("del returns 500 when model.findByIdAndDelete throws", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -204,7 +220,7 @@ describe("BaseController error handling", () => {
         const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
         yield controller.del(req, res);
         expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.send).toHaveBeenCalledWith("Error: Can't delete post");
+        expect(res.send).toHaveBeenCalledWith("Error: Can't delete entity");
         errorSpy.mockRestore();
     }));
     test("update returns 500 when model.findByIdAndUpdate throws", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -217,7 +233,7 @@ describe("BaseController error handling", () => {
         const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
         yield controller.update(req, res);
         expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.send).toHaveBeenCalledWith("Error: Can't update post");
+        expect(res.send).toHaveBeenCalledWith("Error: Can't update entity");
         errorSpy.mockRestore();
     }));
 });

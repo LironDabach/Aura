@@ -154,6 +154,7 @@ class CommentsController extends baseController_1.default {
                         .send("Cannot change creator or associated post of the comment");
                     return;
                 }
+                req.params.id = commentId;
                 _super.update.call(this, req, res);
                 return;
             }
@@ -184,6 +185,7 @@ class CommentsController extends baseController_1.default {
                         .send("Forbidden: You are not the creator of this comment");
                     return;
                 }
+                req.params.id = commentId;
                 _super.del.call(this, req, res);
                 return;
             }

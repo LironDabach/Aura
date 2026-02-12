@@ -8,7 +8,6 @@ class PostsController extends baseController {
     super(postsModel);
   }
 
-  // Override create method to associate post with authenticated user
   async create(req: AuthRequest, res: Response) {
     if (req.user) {
       req.body.senderID = req.user._id; // Associate post with user ID from token
@@ -16,7 +15,30 @@ class PostsController extends baseController {
     return super.create(req, res);
   }
 
-  // Override delete method to allow only creator to delete the post
+  async update(req: AuthRequest, res: Response) {
+    const id = req.params.id;
+    try {
+      const post = await this.model.findById(id);
+      if (!post) {
+        res.status(404).send("Error: Post not found");
+        return;
+      }
+      if (req.body.senderID && req.body.senderID !== post.senderID.toString()) {
+        res.status(400).send("Error: Cannot change creator of the post");
+        return;
+      }
+      if (req.user && post.senderID.toString() !== req.user._id) {
+        res.status(403).send("Forbidden: Not the creator of the post");
+        return;
+      }
+      super.update(req, res);
+      return;
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Error: Can't update post");
+    }
+  }
+
   async del(req: AuthRequest, res: Response) {
     const id = req.params.id;
     try {
@@ -40,28 +62,14 @@ class PostsController extends baseController {
     }
   }
 
-  // Override update method to allow only creator to update the post
-  async update(req: AuthRequest, res: Response) {
-    const id = req.params.id;
+  async getByUserId(req: Request, res: Response) {
+    const userId = req.params.userId;
     try {
-      const post = await this.model.findById(id);
-      if (!post) {
-        res.status(404).send("Error: Post not found");
-        return;
-      }
-      if (req.body.senderID && req.body.senderID !== post.senderID.toString()) {
-        res.status(400).send("Error: Cannot change creator of the post");
-        return;
-      }
-      if (req.user && post.senderID.toString() !== req.user._id) {
-        res.status(403).send("Forbidden: Not the creator of the post");
-        return;
-      }
-      super.update(req, res);
-      return;
+      const posts = await this.model.find({ senderID: userId });
+      res.json(posts);
     } catch (err) {
       console.error(err);
-      res.status(500).send("Error: Can't update post");
+      res.status(500).send("Error: Can't retrieve posts by user ID");
     }
   }
 }

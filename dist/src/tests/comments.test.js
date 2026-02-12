@@ -49,121 +49,7 @@ afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
     }
     yield mongoose_1.default.connection.close();
 }));
-describe("Comments CRUD API", () => {
-    test("creates a comment", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .post("/comment")
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({
-            postID: createdPostId,
-            userID: userId,
-            content: "First comment",
-        });
-        expect(response.status).toBe(201);
-        expect(response.body).toHaveProperty("_id");
-        expect(response.body.content).toBe("First comment");
-        createdCommentId = response.body._id;
-    }));
-    test("create uses authenticated user id over body userID", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .post("/comment")
-            .set("Authorization", `Bearer ${otherAuthToken}`)
-            .send({
-            postID: createdPostId,
-            userID: userId,
-            content: "Comment from other user",
-        });
-        expect(response.status).toBe(201);
-        expect(response.body).toHaveProperty("_id");
-        expect(response.body.userID).toBe(otherUserId);
-        createdOtherCommentId = response.body._id;
-    }));
-    test("gets all comments", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).get("/comment");
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
-        expect(response.body.length).toBeGreaterThan(0);
-    }));
-    test("gets all comments for a specific post", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).get(`/comment?postID=${createdPostId}`);
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
-        expect(response.body.length).toBeGreaterThan(0);
-        response.body.forEach((comment) => {
-            expect(comment.postID).toBe(createdPostId);
-        });
-    }));
-    test("updates a comment", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .put(`/comment/${createdCommentId}`)
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({
-            content: "Updated comment",
-        });
-        expect(response.status).toBe(200);
-        expect(response.body.content).toBe("Updated comment");
-    }));
-    test("update returns 404 when comment is missing", () => __awaiter(void 0, void 0, void 0, function* () {
-        const missingId = new mongoose_1.default.Types.ObjectId().toString();
-        const response = yield (0, supertest_1.default)(app)
-            .put(`/comment/${missingId}`)
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({ content: "Nope" });
-        expect(response.status).toBe(404);
-    }));
-    test("update is forbidden when not creator", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .put(`/comment/${createdCommentId}`)
-            .set("Authorization", `Bearer ${otherAuthToken}`)
-            .send({ content: "Should fail" });
-        expect(response.status).toBe(403);
-    }));
-    test("update rejects changing the creator", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .put(`/comment/${createdCommentId}`)
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({ userID: otherUserId, content: "Attempt change" });
-        expect(response.status).toBe(400);
-    }));
-    test("update returns 500 when model throws", () => __awaiter(void 0, void 0, void 0, function* () {
-        const findByIdSpy = jest
-            .spyOn(commentsModel_1.default, "findById")
-            .mockRejectedValueOnce(new Error("db"));
-        const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
-        const response = yield (0, supertest_1.default)(app)
-            .put(`/comment/${createdCommentId}`)
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({ content: "Trigger error" });
-        expect(response.status).toBe(500);
-        findByIdSpy.mockRestore();
-        errorSpy.mockRestore();
-    }));
-    test("delete is forbidden when not creator", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .delete(`/comment/${createdCommentId}`)
-            .set("Authorization", `Bearer ${otherAuthToken}`);
-        expect(response.status).toBe(403);
-    }));
-    test("delete returns 404 when comment is missing", () => __awaiter(void 0, void 0, void 0, function* () {
-        const missingId = new mongoose_1.default.Types.ObjectId().toString();
-        const response = yield (0, supertest_1.default)(app)
-            .delete(`/comment/${missingId}`)
-            .set("Authorization", `Bearer ${authToken}`);
-        expect(response.status).toBe(404);
-    }));
-    test("deletes a comment", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .delete(`/comment/${createdCommentId}`)
-            .set("Authorization", `Bearer ${authToken}`);
-        expect(response.status).toBe(200);
-        const check = yield (0, supertest_1.default)(app).get(`/comment?postID=${createdPostId}`);
-        expect(check.status).toBe(200);
-        const ids = check.body.map((comment) => comment._id);
-        expect(ids).not.toContain(createdCommentId);
-    }));
-});
 describe("Comments By Post ID API", () => {
-    let postRouteCommentId;
     test("create by post id requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).post(`/comment/post/${createdPostId}`).send({
             content: "No auth comment",
@@ -183,7 +69,21 @@ describe("Comments By Post ID API", () => {
         expect(response.body).toHaveProperty("_id");
         expect(response.body.postID).toBe(createdPostId);
         expect(response.body.userID).toBe(userId);
-        postRouteCommentId = response.body._id;
+        createdCommentId = response.body._id;
+    }));
+    test("create by post id uses authenticated user id over body userID", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .post(`/comment/post/${createdPostId}`)
+            .set("Authorization", `Bearer ${otherAuthToken}`)
+            .send({
+            postID: createdPostId,
+            userID: userId,
+            content: "Comment from other user",
+        });
+        expect(response.status).toBe(201);
+        expect(response.body).toHaveProperty("_id");
+        expect(response.body.userID).toBe(otherUserId);
+        createdOtherCommentId = response.body._id;
     }));
     test("gets comments by post id route", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).get(`/comment/post/${createdPostId}`);
@@ -196,9 +96,17 @@ describe("Comments By Post ID API", () => {
     }));
     test("update by post id requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .put(`/comment/post/${createdPostId}/${postRouteCommentId}`)
+            .put(`/comment/post/${createdPostId}/${createdCommentId}`)
             .send({ content: "No auth update" });
         expect(response.status).toBe(401);
+    }));
+    test("updates a comment by post id", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .put(`/comment/post/${createdPostId}/${createdCommentId}`)
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ content: "Updated comment" });
+        expect(response.status).toBe(200);
+        expect(response.body.content).toBe("Updated comment");
     }));
     test("update by post id returns 404 when comment is missing", () => __awaiter(void 0, void 0, void 0, function* () {
         const missingId = new mongoose_1.default.Types.ObjectId().toString();
@@ -210,14 +118,14 @@ describe("Comments By Post ID API", () => {
     }));
     test("update by post id is forbidden when not creator", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .put(`/comment/post/${createdPostId}/${postRouteCommentId}`)
+            .put(`/comment/post/${createdPostId}/${createdCommentId}`)
             .set("Authorization", `Bearer ${otherAuthToken}`)
             .send({ content: "Should fail" });
         expect(response.status).toBe(403);
     }));
     test("update by post id rejects changing user or post", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .put(`/comment/post/${createdPostId}/${postRouteCommentId}`)
+            .put(`/comment/post/${createdPostId}/${createdCommentId}`)
             .set("Authorization", `Bearer ${authToken}`)
             .send({
             userID: otherUserId,
@@ -227,7 +135,7 @@ describe("Comments By Post ID API", () => {
         expect(response.status).toBe(400);
     }));
     test("delete by post id requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).delete(`/comment/post/${createdPostId}/${postRouteCommentId}`);
+        const response = yield (0, supertest_1.default)(app).delete(`/comment/post/${createdPostId}/${createdCommentId}`);
         expect(response.status).toBe(401);
     }));
     test("delete by post id returns 404 when comment is missing", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -239,9 +147,19 @@ describe("Comments By Post ID API", () => {
     }));
     test("delete by post id is forbidden when not creator", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .delete(`/comment/post/${createdPostId}/${postRouteCommentId}`)
+            .delete(`/comment/post/${createdPostId}/${createdCommentId}`)
             .set("Authorization", `Bearer ${otherAuthToken}`);
         expect(response.status).toBe(403);
+    }));
+    test("deletes a comment by post id route", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .delete(`/comment/post/${createdPostId}/${createdCommentId}`)
+            .set("Authorization", `Bearer ${authToken}`);
+        expect(response.status).toBe(200);
+        const check = yield (0, supertest_1.default)(app).get(`/comment/post/${createdPostId}`);
+        expect(check.status).toBe(200);
+        const ids = check.body.map((comment) => comment._id);
+        expect(ids).not.toContain(createdCommentId);
     }));
 });
 //# sourceMappingURL=comments.test.js.map
