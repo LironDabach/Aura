@@ -10,6 +10,7 @@
     "testComment": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/comments.test.ts",
     "testPost": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/posts.test.ts",
     "testAuth": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/auth.test.ts",
+    "testLike": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/likes.test.ts",
     "jestCoverage": "jest --coverage"
   },
   "repository": {

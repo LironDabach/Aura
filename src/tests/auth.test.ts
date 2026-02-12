@@ -4,6 +4,7 @@ import usersModel from "../models/usersModel";
 import { Express } from "express";
 import jwt from "jsonwebtoken";
 import { authenticate } from "../middleware/authMiddleware";
+import mongoose from "mongoose";
 
 let app: Express;
 
@@ -13,8 +14,9 @@ beforeAll(async () => {
   await usersModel.deleteMany({});
 });
 
-afterAll((done) => {
-  done();
+afterAll(async () => {
+  await usersModel.deleteMany({});
+  await mongoose.connection.close();
 });
 
 describe("Auth API", () => {

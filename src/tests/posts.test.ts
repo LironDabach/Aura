@@ -17,14 +17,14 @@ let createdOtherPostId: string;
 beforeAll(async () => {
   jest.setTimeout(20000);
   app = await initApp();
-  await postsModel.deleteMany({});
   const secret = process.env.JWT_SECRET || "default_secret";
   authToken = jwt.sign({ _id: userId }, secret, { expiresIn: "1h" });
   otherAuthToken = jwt.sign({ _id: otherUserId }, secret, { expiresIn: "1h" });
 });
 
-afterAll((done) => {
-  done();
+afterAll(async () => {
+  await postsModel.deleteMany({ senderID: { $in: [userId, otherUserId] } });
+  await mongoose.connection.close();
 });
 
 describe("Posts CRUD API", () => {

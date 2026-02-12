@@ -1,6 +1,7 @@
 import request from "supertest";
 import initApp from "../index";
 import { Express } from "express";
+import mongoose from "mongoose";
 
 let app: Express;
 
@@ -9,8 +10,8 @@ beforeAll(async () => {
   app = await initApp();
 });
 
-afterAll((done) => {
-  done();
+afterAll(async () => {
+  await mongoose.connection.close();
 });
 
 describe("Swagger and initApp", () => {

@@ -18,8 +18,6 @@ let createdOtherCommentId: string;
 beforeAll(async () => {
   jest.setTimeout(20000);
   app = await initApp();
-  await commentsModel.deleteMany({});
-  await postsModel.deleteMany({});
   const createdPost = await postsModel.create({
     title: "Post for comments",
     body: "Seed post body",
@@ -31,8 +29,15 @@ beforeAll(async () => {
   otherAuthToken = jwt.sign({ _id: otherUserId }, secret, { expiresIn: "1h" });
 });
 
-afterAll((done) => {
-  done();
+afterAll(async () => {
+  const commentIds = [createdCommentId, createdOtherCommentId].filter(Boolean);
+  if (commentIds.length > 0) {
+    await commentsModel.deleteMany({ _id: { $in: commentIds } });
+  }
+  if (createdPostId) {
+    await postsModel.findByIdAndDelete(createdPostId);
+  }
+  await mongoose.connection.close();
 });
 
 describe("Comments CRUD API", () => {

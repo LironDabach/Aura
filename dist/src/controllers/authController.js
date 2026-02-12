@@ -58,7 +58,6 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // Login logic here
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
@@ -121,7 +120,6 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return sendError(401, "Invalid refresh token", res);
         }
         const tokens = generateToken(decoded._id);
-        //remove old token from user refreshTokens and add the new one
         user.refreshTokens = user.refreshTokens.filter((token) => token !== refreshToken);
         user.refreshTokens.push(tokens.refreshToken);
         yield user.save();

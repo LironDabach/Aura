@@ -25,9 +25,14 @@ const initApp = () => {
       reject("DATABASE_URL is undefined");
       return;
     }
-    mongoose.connect(dbUrl, {}).then(() => {
-      resolve(app);
-    });
+    mongoose
+      .connect(dbUrl, {})
+      .then(() => {
+        resolve(app);
+      })
+      .catch((error) => {
+        reject(error);
+      });
     const db = mongoose.connection;
     db.on("error", (error) => console.error(error));
     db.once("open", () => console.log("Connected to Database"));
