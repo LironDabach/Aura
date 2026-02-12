@@ -9,9 +9,11 @@ const postsRoute_1 = __importDefault(require("./routes/postsRoute"));
 const commentsRoute_1 = __importDefault(require("./routes/commentsRoute"));
 const authRoute_1 = __importDefault(require("./routes/authRoute"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const swagger_1 = require("./swagger");
 dotenv_1.default.config({ path: ".env.dev" });
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
+(0, swagger_1.setupSwagger)(app);
 // // API routes
 app.use("/post", postsRoute_1.default);
 app.use("/comment", commentsRoute_1.default);
@@ -23,8 +25,13 @@ const initApp = () => {
             reject("DATABASE_URL is undefined");
             return;
         }
-        mongoose_1.default.connect(dbUrl, {}).then(() => {
+        mongoose_1.default
+            .connect(dbUrl, {})
+            .then(() => {
             resolve(app);
+        })
+            .catch((error) => {
+            reject(error);
         });
         const db = mongoose_1.default.connection;
         db.on("error", (error) => console.error(error));
