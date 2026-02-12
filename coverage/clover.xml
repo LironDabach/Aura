@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1770903549737" clover="3.2.0">
-  <project timestamp="1770903549737" name="All files">
-    <metrics statements="364" coveredstatements="342" conditionals="118" coveredconditionals="98" methods="45" coveredmethods="43" elements="527" coveredelements="483" complexity="0" loc="364" ncloc="364" packages="5" files="16" classes="16"/>
+<coverage generated="1770910010975" clover="3.2.0">
+  <project timestamp="1770910010975" name="All files">
+    <metrics statements="438" coveredstatements="353" conditionals="144" coveredconditionals="102" methods="52" coveredmethods="44" elements="634" coveredelements="499" complexity="0" loc="438" ncloc="438" packages="5" files="16" classes="16"/>
     <package name="src">
       <metrics statements="44" coveredstatements="43" conditionals="6" coveredconditionals="5" methods="9" coveredmethods="7"/>
       <file name="index.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/index.ts">
@@ -56,7 +56,7 @@
       </file>
     </package>
     <package name="src.controllers">
-      <metrics statements="258" coveredstatements="237" conditionals="104" coveredconditionals="86" methods="35" coveredmethods="35"/>
+      <metrics statements="333" coveredstatements="249" conditionals="130" coveredconditionals="90" methods="42" coveredmethods="36"/>
       <file name="authController.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/controllers/authController.ts">
         <metrics statements="86" coveredstatements="86" conditionals="34" coveredconditionals="31" methods="12" coveredmethods="12"/>
         <line num="2" count="5" type="stmt"/>
@@ -147,13 +147,13 @@
         <line num="146" count="5" type="stmt"/>
       </file>
       <file name="baseController.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/controllers/baseController.ts">
-        <metrics statements="41" coveredstatements="41" conditionals="4" coveredconditionals="4" methods="8" coveredmethods="8"/>
+        <metrics statements="72" coveredstatements="45" conditionals="10" coveredconditionals="7" methods="11" coveredmethods="8"/>
         <line num="7" count="17" type="stmt"/>
-        <line num="11" count="6" type="stmt"/>
-        <line num="13" count="6" type="stmt"/>
-        <line num="14" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="15" count="5" type="stmt"/>
-        <line num="16" count="4" type="stmt"/>
+        <line num="11" count="3" type="stmt"/>
+        <line num="13" count="3" type="stmt"/>
+        <line num="14" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
         <line num="18" count="1" type="stmt"/>
         <line num="19" count="1" type="stmt"/>
         <line num="22" count="1" type="stmt"/>
@@ -167,67 +167,142 @@
         <line num="35" count="1" type="stmt"/>
         <line num="38" count="1" type="stmt"/>
         <line num="39" count="1" type="stmt"/>
-        <line num="44" count="8" type="stmt"/>
-        <line num="45" count="8" type="stmt"/>
-        <line num="46" count="8" type="stmt"/>
-        <line num="47" count="8" type="stmt"/>
-        <line num="48" count="6" type="stmt"/>
-        <line num="50" count="2" type="stmt"/>
-        <line num="51" count="2" type="stmt"/>
-        <line num="56" count="3" type="stmt"/>
-        <line num="57" count="3" type="stmt"/>
-        <line num="58" count="3" type="stmt"/>
-        <line num="59" count="2" type="stmt"/>
-        <line num="60" count="2" type="stmt"/>
-        <line num="62" count="1" type="stmt"/>
-        <line num="63" count="1" type="stmt"/>
-        <line num="68" count="3" type="stmt"/>
-        <line num="69" count="3" type="stmt"/>
-        <line num="70" count="3" type="stmt"/>
-        <line num="71" count="3" type="stmt"/>
-        <line num="74" count="2" type="stmt"/>
-        <line num="76" count="1" type="stmt"/>
-        <line num="77" count="1" type="stmt"/>
-        <line num="82" count="5" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="63" count="0" type="stmt"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="66" count="0" type="stmt"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="75" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="82" count="0" type="stmt"/>
+        <line num="83" count="0" type="stmt"/>
+        <line num="89" count="8" type="stmt"/>
+        <line num="90" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="91" count="2" type="stmt"/>
+        <line num="93" count="8" type="stmt"/>
+        <line num="94" count="8" type="stmt"/>
+        <line num="95" count="8" type="stmt"/>
+        <line num="96" count="8" type="stmt"/>
+        <line num="97" count="6" type="stmt"/>
+        <line num="99" count="2" type="stmt"/>
+        <line num="100" count="2" type="stmt"/>
+        <line num="105" count="3" type="stmt"/>
+        <line num="106" count="3" type="stmt"/>
+        <line num="107" count="3" type="stmt"/>
+        <line num="108" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="109" count="0" type="stmt"/>
+        <line num="110" count="0" type="stmt"/>
+        <line num="112" count="2" type="stmt"/>
+        <line num="113" count="2" type="stmt"/>
+        <line num="115" count="1" type="stmt"/>
+        <line num="116" count="1" type="stmt"/>
+        <line num="121" count="3" type="stmt"/>
+        <line num="122" count="3" type="stmt"/>
+        <line num="123" count="3" type="stmt"/>
+        <line num="124" count="3" type="stmt"/>
+        <line num="127" count="2" type="stmt"/>
+        <line num="129" count="1" type="stmt"/>
+        <line num="130" count="1" type="stmt"/>
+        <line num="135" count="5" type="stmt"/>
       </file>
       <file name="commentsController.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/controllers/commentsController.ts">
-        <metrics statements="36" coveredstatements="34" conditionals="18" coveredconditionals="17" methods="4" coveredmethods="4"/>
+        <metrics statements="80" coveredstatements="42" conditionals="38" coveredconditionals="18" methods="8" coveredmethods="5"/>
         <line num="1" count="5" type="stmt"/>
         <line num="3" count="5" type="stmt"/>
         <line num="8" count="5" type="stmt"/>
-        <line num="13" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="14" count="2" type="stmt"/>
-        <line num="16" count="2" type="stmt"/>
-        <line num="21" count="3" type="stmt"/>
-        <line num="22" count="3" type="stmt"/>
-        <line num="23" count="3" type="stmt"/>
-        <line num="24" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="25" count="1" type="stmt"/>
-        <line num="26" count="1" type="stmt"/>
-        <line num="29" count="2" type="cond" truecount="4" falsecount="0"/>
-        <line num="30" count="1" type="stmt"/>
-        <line num="31" count="1" type="stmt"/>
-        <line num="33" count="1" type="stmt"/>
-        <line num="36" count="1" type="stmt"/>
-        <line num="39" count="0" type="stmt"/>
+        <line num="13" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="24" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="29" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="36" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
         <line num="40" count="0" type="stmt"/>
-        <line num="46" count="5" type="stmt"/>
-        <line num="47" count="5" type="stmt"/>
-        <line num="48" count="5" type="stmt"/>
-        <line num="49" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="50" count="1" type="stmt"/>
-        <line num="51" count="1" type="stmt"/>
-        <line num="54" count="3" type="cond" truecount="4" falsecount="0"/>
-        <line num="55" count="1" type="stmt"/>
-        <line num="58" count="1" type="stmt"/>
-        <line num="61" count="2" type="cond" truecount="4" falsecount="0"/>
-        <line num="62" count="1" type="stmt"/>
-        <line num="63" count="1" type="stmt"/>
-        <line num="65" count="1" type="stmt"/>
-        <line num="66" count="1" type="stmt"/>
-        <line num="68" count="1" type="stmt"/>
-        <line num="69" count="1" type="stmt"/>
-        <line num="74" count="5" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="53" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="58" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="68" count="0" type="stmt"/>
+        <line num="69" count="0" type="stmt"/>
+        <line num="76" count="2" type="stmt"/>
+        <line num="77" count="2" type="stmt"/>
+        <line num="78" count="2" type="stmt"/>
+        <line num="81" count="2" type="stmt"/>
+        <line num="83" count="0" type="stmt"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="90" count="2" type="stmt"/>
+        <line num="91" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="92" count="2" type="stmt"/>
+        <line num="94" count="2" type="stmt"/>
+        <line num="95" count="2" type="stmt"/>
+        <line num="100" count="4" type="stmt"/>
+        <line num="101" count="4" type="stmt"/>
+        <line num="102" count="4" type="stmt"/>
+        <line num="103" count="4" type="stmt"/>
+        <line num="104" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="105" count="1" type="stmt"/>
+        <line num="106" count="1" type="stmt"/>
+        <line num="109" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="110" count="1" type="stmt"/>
+        <line num="113" count="1" type="stmt"/>
+        <line num="116" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="120" count="1" type="stmt"/>
+        <line num="123" count="1" type="stmt"/>
+        <line num="125" count="1" type="stmt"/>
+        <line num="126" count="1" type="stmt"/>
+        <line num="127" count="1" type="stmt"/>
+        <line num="129" count="0" type="stmt"/>
+        <line num="130" count="0" type="stmt"/>
+        <line num="136" count="3" type="stmt"/>
+        <line num="137" count="3" type="stmt"/>
+        <line num="138" count="3" type="stmt"/>
+        <line num="139" count="3" type="stmt"/>
+        <line num="140" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="141" count="1" type="stmt"/>
+        <line num="142" count="1" type="stmt"/>
+        <line num="145" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="146" count="1" type="stmt"/>
+        <line num="149" count="1" type="stmt"/>
+        <line num="151" count="1" type="stmt"/>
+        <line num="152" count="1" type="stmt"/>
+        <line num="153" count="1" type="stmt"/>
+        <line num="155" count="0" type="stmt"/>
+        <line num="156" count="0" type="stmt"/>
+        <line num="161" count="5" type="stmt"/>
       </file>
       <file name="likesController.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/controllers/likesController.ts">
         <metrics statements="57" coveredstatements="40" conditionals="26" coveredconditionals="14" methods="7" coveredmethods="7"/>
@@ -337,17 +412,17 @@
         <metrics statements="14" coveredstatements="14" conditionals="8" coveredconditionals="7" methods="1" coveredmethods="1"/>
         <line num="2" count="5" type="stmt"/>
         <line num="7" count="5" type="stmt"/>
-        <line num="12" count="37" type="stmt"/>
-        <line num="13" count="37" type="cond" truecount="4" falsecount="0"/>
-        <line num="14" count="7" type="stmt"/>
-        <line num="20" count="30" type="stmt"/>
-        <line num="21" count="30" type="cond" truecount="2" falsecount="0"/>
+        <line num="12" count="39" type="stmt"/>
+        <line num="13" count="39" type="cond" truecount="4" falsecount="0"/>
+        <line num="14" count="10" type="stmt"/>
+        <line num="20" count="29" type="stmt"/>
+        <line num="21" count="29" type="cond" truecount="2" falsecount="0"/>
         <line num="22" count="1" type="stmt"/>
-        <line num="24" count="29" type="cond" truecount="1" falsecount="1"/>
-        <line num="25" count="29" type="stmt"/>
-        <line num="26" count="29" type="stmt"/>
-        <line num="27" count="28" type="stmt"/>
-        <line num="28" count="28" type="stmt"/>
+        <line num="24" count="28" type="cond" truecount="1" falsecount="1"/>
+        <line num="25" count="28" type="stmt"/>
+        <line num="26" count="28" type="stmt"/>
+        <line num="27" count="27" type="stmt"/>
+        <line num="28" count="27" type="stmt"/>
         <line num="30" count="1" type="stmt"/>
       </file>
     </package>
@@ -379,7 +454,7 @@
       </file>
     </package>
     <package name="src.routes">
-      <metrics statements="36" coveredstatements="36" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <metrics statements="35" coveredstatements="35" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       <file name="authRoute.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/routes/authRoute.ts">
         <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="5" type="stmt"/>
@@ -392,17 +467,16 @@
         <line num="146" count="5" type="stmt"/>
       </file>
       <file name="commentsRoute.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/routes/commentsRoute.ts">
-        <metrics statements="10" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="5" type="stmt"/>
         <line num="2" count="5" type="stmt"/>
         <line num="3" count="5" type="stmt"/>
         <line num="5" count="5" type="stmt"/>
-        <line num="26" count="5" type="stmt"/>
-        <line num="52" count="5" type="stmt"/>
-        <line num="80" count="5" type="stmt"/>
-        <line num="118" count="5" type="stmt"/>
-        <line num="150" count="5" type="stmt"/>
-        <line num="152" count="5" type="stmt"/>
+        <line num="8" count="5" type="stmt"/>
+        <line num="11" count="5" type="stmt"/>
+        <line num="14" count="5" type="stmt"/>
+        <line num="17" count="5" type="stmt"/>
+        <line num="19" count="5" type="stmt"/>
       </file>
       <file name="likesRoute.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/routes/likesRoute.ts">
         <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
