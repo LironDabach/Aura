@@ -75,6 +75,26 @@ describe("Posts CRUD API", () => {
     expect(response.body).toHaveProperty("_id", createdPostId);
   });
 
+  test("gets posts by user id", async () => {
+    const response = await request(app).get(`/post/user/${userId}`);
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
+    response.body.forEach((post: { senderID: string }) => {
+      expect(post.senderID).toBe(userId);
+    });
+  });
+
+  test("gets posts by user id returns empty array for user without posts", async () => {
+    const noPostsUserId = new mongoose.Types.ObjectId().toString();
+    const response = await request(app).get(`/post/user/${noPostsUserId}`);
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body).toHaveLength(0);
+  });
+
   test("updates a post", async () => {
     const response = await request(app)
       .put(`/post/${createdPostId}`)
