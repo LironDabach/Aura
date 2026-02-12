@@ -30,37 +30,6 @@ class CommentsController extends baseController_1.default {
             return _super.create.call(this, req, res);
         });
     }
-    // Override DELETE to ensure only creator can delete
-    del(req, res) {
-        const _super = Object.create(null, {
-            del: { get: () => super.del }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            const id = req.params.id;
-            try {
-                const comment = yield this.model.findById(id);
-                if (!comment) {
-                    res.status(404).send("Comment not found");
-                    return;
-                }
-                // // Check if the authenticated user is the creator of the comment
-                if (req.user && comment.userID.toString() === req.user._id) {
-                    _super.del.call(this, req, res);
-                    return;
-                }
-                else {
-                    res
-                        .status(403)
-                        .send("Forbidden: You are not the creator of this comment");
-                    return;
-                }
-            }
-            catch (err) {
-                console.error(err);
-                res.status(500).send("Error deleting comment");
-            }
-        });
-    }
     // Override update to prevent changing userId and ensure ownership
     update(req, res) {
         const _super = Object.create(null, {
@@ -92,6 +61,135 @@ class CommentsController extends baseController_1.default {
             catch (err) {
                 console.error(err);
                 res.status(500).send("Error updating comment");
+            }
+        });
+    }
+    // Override DELETE to ensure only creator can delete
+    del(req, res) {
+        const _super = Object.create(null, {
+            del: { get: () => super.del }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            const id = req.params.id;
+            try {
+                const comment = yield this.model.findById(id);
+                if (!comment) {
+                    res.status(404).send("Comment not found");
+                    return;
+                }
+                // // Check if the authenticated user is the creator of the comment
+                if (req.user && comment.userID.toString() === req.user._id) {
+                    _super.del.call(this, req, res);
+                    return;
+                }
+                else {
+                    res
+                        .status(403)
+                        .send("Forbidden: You are not the creator of this comment");
+                    return;
+                }
+            }
+            catch (err) {
+                console.error(err);
+                res.status(500).send("Error deleting comment");
+            }
+        });
+    }
+    // Get comments for a specific post
+    getByPostId(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const postId = req.params.postId;
+            try {
+                const comments = yield this.model
+                    .find({ postID: postId })
+                    .populate("userID", "username"); // Populate user info (e.g., username)
+                res.status(200).json(comments);
+            }
+            catch (err) {
+                console.error(err);
+                res.status(500).send("Error fetching comments for the post");
+            }
+        });
+    }
+    //Post a comment to a specific post
+    createByPostId(req, res) {
+        const _super = Object.create(null, {
+            create: { get: () => super.create }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            const postId = req.params.postId;
+            if (req.user) {
+                req.body.userID = req.user._id; // Associate comment with user ID from token
+            }
+            req.body.postID = postId; // Associate comment with the post ID from URL
+            return _super.create.call(this, req, res);
+        });
+    }
+    // Update a comment for a specific post
+    updateByPostId(req, res) {
+        const _super = Object.create(null, {
+            update: { get: () => super.update }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            const commentId = req.params.commentId;
+            const postId = req.params.postId;
+            try {
+                const comment = yield this.model.findById(commentId);
+                if (!comment) {
+                    res.status(404).send("Comment not found");
+                    return;
+                }
+                // Check if the authenticated user is the creator of the comment
+                if (!req.user || comment.userID.toString() !== req.user._id) {
+                    res
+                        .status(403)
+                        .send("Forbidden: You are not the creator of this comment");
+                    return;
+                }
+                // Prevent changing userID and postID fields
+                if ((req.body.userID && req.body.userID !== comment.userID.toString()) ||
+                    (req.body.postID && req.body.postID !== comment.postID.toString())) {
+                    res
+                        .status(400)
+                        .send("Cannot change creator or associated post of the comment");
+                    return;
+                }
+                _super.update.call(this, req, res);
+                return;
+            }
+            catch (err) {
+                console.error(err);
+                res.status(500).send("Error updating comment");
+            }
+        });
+    }
+    // Delete a comment from a specific post
+    delByPostId(req, res) {
+        const _super = Object.create(null, {
+            del: { get: () => super.del }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            const commentId = req.params.commentId;
+            const postId = req.params.postId;
+            try {
+                const comment = yield this.model.findById(commentId);
+                if (!comment) {
+                    res.status(404).send("Comment not found");
+                    return;
+                }
+                // Check if the authenticated user is the creator of the comment
+                if (!req.user || comment.userID.toString() !== req.user._id) {
+                    res
+                        .status(403)
+                        .send("Forbidden: You are not the creator of this comment");
+                    return;
+                }
+                _super.del.call(this, req, res);
+                return;
+            }
+            catch (err) {
+                console.error(err);
+                res.status(500).send("Error deleting comment");
             }
         });
     }

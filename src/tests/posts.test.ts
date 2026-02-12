@@ -216,14 +216,14 @@ describe("BaseController error handling", () => {
   test("create returns 500 when model.create throws", async () => {
     const model = { create: jest.fn().mockRejectedValue(new Error("db")) };
     const controller = new BaseController(model);
-    const req: any = { body: { title: "x" } };
+    const req: any = { params: {}, body: { title: "x" } };
     const res = makeRes();
     const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
     await controller.create(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith("Error: Can't create post");
+    expect(res.send).toHaveBeenCalledWith("Error: Can't create entity");
     errorSpy.mockRestore();
   });
 
@@ -239,7 +239,7 @@ describe("BaseController error handling", () => {
     await controller.del(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith("Error: Can't delete post");
+    expect(res.send).toHaveBeenCalledWith("Error: Can't delete entity");
     errorSpy.mockRestore();
   });
 
@@ -255,7 +255,7 @@ describe("BaseController error handling", () => {
     await controller.update(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith("Error: Can't update post");
+    expect(res.send).toHaveBeenCalledWith("Error: Can't update entity");
     errorSpy.mockRestore();
   });
 });
