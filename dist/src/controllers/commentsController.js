@@ -50,9 +50,13 @@ class CommentsController extends baseController_1.default {
                         .send("Forbidden: You are not the creator of this comment");
                     return;
                 }
-                // Prevent changing userId field
-                if (req.body.userID && req.body.userID !== comment.userID.toString()) {
-                    res.status(400).send("Cannot change creator of the comment");
+                // Prevent changing userID/date fields
+                if ((req.body.userID && req.body.userID !== comment.userID.toString()) ||
+                    (req.body.date &&
+                        new Date(req.body.date).getTime() !== new Date(comment.date).getTime())) {
+                    res
+                        .status(400)
+                        .send("Cannot change creator or created date of the comment");
                     return;
                 }
                 _super.update.call(this, req, res);
@@ -146,14 +150,17 @@ class CommentsController extends baseController_1.default {
                         .send("Forbidden: You are not the creator of this comment");
                     return;
                 }
-                // Prevent changing userID and postID fields
+                // Prevent changing userID, postID and date fields
                 if ((req.body.userID && req.body.userID !== comment.userID.toString()) ||
-                    (req.body.postID && req.body.postID !== comment.postID.toString())) {
+                    (req.body.postID && req.body.postID !== comment.postID.toString()) ||
+                    (req.body.date &&
+                        new Date(req.body.date).getTime() !== new Date(comment.date).getTime())) {
                     res
                         .status(400)
-                        .send("Cannot change creator or associated post of the comment");
+                        .send("Cannot change creator, associated post, or created date of the comment");
                     return;
                 }
+                req.params.id = commentId;
                 _super.update.call(this, req, res);
                 return;
             }
@@ -184,6 +191,7 @@ class CommentsController extends baseController_1.default {
                         .send("Forbidden: You are not the creator of this comment");
                     return;
                 }
+                req.params.id = commentId;
                 _super.del.call(this, req, res);
                 return;
             }

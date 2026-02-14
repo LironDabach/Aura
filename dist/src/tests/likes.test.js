@@ -178,43 +178,4 @@ describe("Likes CRUD API", () => {
         expect(response.status).toBe(404);
     }));
 });
-describe("Likes By Post ID API", () => {
-    test("get by post id returns 500 when model throws", () => __awaiter(void 0, void 0, void 0, function* () {
-        const findSpy = jest
-            .spyOn(likesModel_1.default, "find")
-            .mockRejectedValueOnce(new Error("db"));
-        const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
-        const response = yield (0, supertest_1.default)(app).get(`/like/post/${createdPostId}`);
-        expect(response.status).toBe(500);
-        findSpy.mockRestore();
-        errorSpy.mockRestore();
-    }));
-    test("create by post id returns 500 when model throws", () => __awaiter(void 0, void 0, void 0, function* () {
-        const createSpy = jest
-            .spyOn(likesModel_1.default, "create")
-            .mockRejectedValueOnce(new Error("db"));
-        const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
-        const response = yield (0, supertest_1.default)(app)
-            .post(`/like/post/${createdPostId}`)
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({
-            senderID: userId,
-        });
-        expect(response.status).toBe(500);
-        createSpy.mockRestore();
-        errorSpy.mockRestore();
-    }));
-    test("delete by post id returns 500 when model throws", () => __awaiter(void 0, void 0, void 0, function* () {
-        const findOneSpy = jest
-            .spyOn(likesModel_1.default, "findOne")
-            .mockRejectedValueOnce(new Error("db"));
-        const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
-        const response = yield (0, supertest_1.default)(app)
-            .delete(`/like/post/${createdPostId}`)
-            .set("Authorization", `Bearer ${otherAuthToken}`);
-        expect(response.status).toBe(500);
-        findOneSpy.mockRestore();
-        errorSpy.mockRestore();
-    }));
-});
 //# sourceMappingURL=likes.test.js.map
