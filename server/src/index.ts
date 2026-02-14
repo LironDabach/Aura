@@ -16,10 +16,10 @@ app.use(express.json());
 setupSwagger(app);
 
 // // API routes
-app.use("/post", postsRoute);
-app.use("/comment", commentsRoute);
-app.use("/like", likesRoute);
-app.use("/auth", authRoute);
+app.use("/api/post", postsRoute);
+app.use("/api/comment", commentsRoute);
+app.use("/api/like", likesRoute);
+app.use("/api/auth", authRoute);
 
 // Serve React static files from dist
 const distPath = path.join(__dirname, "../client/dist");
