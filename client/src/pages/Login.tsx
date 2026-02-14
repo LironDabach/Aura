@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { login } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../auth.css";
 import logo from "../assets/logo.svg";
 
@@ -16,7 +17,6 @@ const Login: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      // backend expects username + email; reuse email as username for now
       const tokens = await login({ username: email, email, password } as any);
       localStorage.setItem("token", tokens.token);
       localStorage.setItem("refreshToken", tokens.refreshToken);
@@ -55,7 +55,8 @@ const Login: React.FC = () => {
 
             {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
 
-            <div className="alt">Don't have user? <a href="/register">Subscribe</a></div>
+            <div className="alt">Don't have an account? <Link to="/register">Register</Link></div>
+
           </form>
         </div>
       </div>

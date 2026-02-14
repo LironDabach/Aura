@@ -67,3 +67,8 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.field input {
+  background-color: white;
+  color: rgb(0, 0, 0);
+}
