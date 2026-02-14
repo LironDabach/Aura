@@ -18,7 +18,6 @@ class PostsController extends baseController_1.default {
     constructor() {
         super(postsModel_1.default);
     }
-    // Override create method to associate post with authenticated user
     create(req, res) {
         const _super = Object.create(null, {
             create: { get: () => super.create }
@@ -27,10 +26,44 @@ class PostsController extends baseController_1.default {
             if (req.user) {
                 req.body.senderID = req.user._id; // Associate post with user ID from token
             }
+            // Keep post date server-managed to prevent spoofing.
+            req.body.date = new Date();
             return _super.create.call(this, req, res);
         });
     }
-    // Override delete method to allow only creator to delete the post
+    update(req, res) {
+        const _super = Object.create(null, {
+            update: { get: () => super.update }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            const id = req.params.id;
+            try {
+                const post = yield this.model.findById(id);
+                if (!post) {
+                    res.status(404).send("Error: Post not found");
+                    return;
+                }
+                if (req.body.senderID && req.body.senderID !== post.senderID.toString()) {
+                    res.status(400).send("Error: Cannot change creator of the post");
+                    return;
+                }
+                if (req.body.date && req.body.date !== post.date.toISOString()) {
+                    res.status(400).send("Error: Cannot change post date");
+                    return;
+                }
+                if (req.user && post.senderID.toString() !== req.user._id) {
+                    res.status(403).send("Forbidden: Not the creator of the post");
+                    return;
+                }
+                _super.update.call(this, req, res);
+                return;
+            }
+            catch (err) {
+                console.error(err);
+                res.status(500).send("Error: Can't update post");
+            }
+        });
+    }
     del(req, res) {
         const _super = Object.create(null, {
             del: { get: () => super.del }
@@ -61,33 +94,16 @@ class PostsController extends baseController_1.default {
             }
         });
     }
-    // Override update method to allow only creator to update the post
-    update(req, res) {
-        const _super = Object.create(null, {
-            update: { get: () => super.update }
-        });
+    getByUserId(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const id = req.params.id;
+            const userId = req.params.userId;
             try {
-                const post = yield this.model.findById(id);
-                if (!post) {
-                    res.status(404).send("Error: Post not found");
-                    return;
-                }
-                if (req.body.senderID && req.body.senderID !== post.senderID.toString()) {
-                    res.status(400).send("Error: Cannot change creator of the post");
-                    return;
-                }
-                if (req.user && post.senderID.toString() !== req.user._id) {
-                    res.status(403).send("Forbidden: Not the creator of the post");
-                    return;
-                }
-                _super.update.call(this, req, res);
-                return;
+                const posts = yield this.model.find({ senderID: userId });
+                res.json(posts);
             }
             catch (err) {
                 console.error(err);
-                res.status(500).send("Error: Can't update post");
+                res.status(500).send("Error: Can't retrieve posts by user ID");
             }
         });
     }

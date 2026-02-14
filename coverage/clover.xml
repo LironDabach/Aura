@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1770910010975" clover="3.2.0">
-  <project timestamp="1770910010975" name="All files">
-    <metrics statements="438" coveredstatements="353" conditionals="144" coveredconditionals="102" methods="52" coveredmethods="44" elements="634" coveredelements="499" complexity="0" loc="438" ncloc="438" packages="5" files="16" classes="16"/>
+<coverage generated="1770913643881" clover="3.2.0">
+  <project timestamp="1770913643881" name="All files">
+    <metrics statements="445" coveredstatements="358" conditionals="144" coveredconditionals="102" methods="53" coveredmethods="45" elements="642" coveredelements="505" complexity="0" loc="445" ncloc="445" packages="5" files="16" classes="16"/>
     <package name="src">
       <metrics statements="44" coveredstatements="43" conditionals="6" coveredconditionals="5" methods="9" coveredmethods="7"/>
       <file name="index.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/index.ts">
@@ -56,7 +56,7 @@
       </file>
     </package>
     <package name="src.controllers">
-      <metrics statements="333" coveredstatements="249" conditionals="130" coveredconditionals="90" methods="42" coveredmethods="36"/>
+      <metrics statements="339" coveredstatements="253" conditionals="130" coveredconditionals="90" methods="43" coveredmethods="37"/>
       <file name="authController.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/controllers/authController.ts">
         <metrics statements="86" coveredstatements="86" conditionals="34" coveredconditionals="31" methods="12" coveredmethods="12"/>
         <line num="2" count="5" type="stmt"/>
@@ -365,45 +365,51 @@
         <line num="112" count="1" type="stmt"/>
       </file>
       <file name="postsController.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/controllers/postsController.ts">
-        <metrics statements="38" coveredstatements="36" conditionals="22" coveredconditionals="20" methods="4" coveredmethods="4"/>
+        <metrics statements="44" coveredstatements="40" conditionals="22" coveredconditionals="20" methods="5" coveredmethods="5"/>
         <line num="2" count="5" type="stmt"/>
         <line num="3" count="5" type="stmt"/>
         <line num="8" count="5" type="stmt"/>
-        <line num="13" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="14" count="2" type="stmt"/>
-        <line num="16" count="2" type="stmt"/>
-        <line num="21" count="3" type="stmt"/>
-        <line num="22" count="3" type="stmt"/>
-        <line num="23" count="3" type="stmt"/>
-        <line num="24" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="25" count="1" type="stmt"/>
-        <line num="26" count="1" type="stmt"/>
-        <line num="28" count="2" type="cond" truecount="4" falsecount="0"/>
-        <line num="29" count="1" type="stmt"/>
-        <line num="30" count="1" type="stmt"/>
+        <line num="12" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="19" count="5" type="stmt"/>
+        <line num="20" count="5" type="stmt"/>
+        <line num="21" count="5" type="stmt"/>
+        <line num="22" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="26" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="30" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="31" count="1" type="stmt"/>
         <line num="32" count="1" type="stmt"/>
-        <line num="33" count="1" type="cond" truecount="3" falsecount="1"/>
         <line num="34" count="1" type="stmt"/>
         <line num="35" count="1" type="stmt"/>
-        <line num="38" count="0" type="stmt"/>
-        <line num="39" count="0" type="stmt"/>
-        <line num="45" count="5" type="stmt"/>
-        <line num="46" count="5" type="stmt"/>
-        <line num="47" count="5" type="stmt"/>
-        <line num="48" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="49" count="1" type="stmt"/>
-        <line num="50" count="1" type="stmt"/>
-        <line num="52" count="3" type="cond" truecount="4" falsecount="0"/>
-        <line num="53" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="43" count="3" type="stmt"/>
+        <line num="44" count="3" type="stmt"/>
+        <line num="45" count="3" type="stmt"/>
+        <line num="46" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="50" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
         <line num="54" count="1" type="stmt"/>
-        <line num="56" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="55" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="56" count="1" type="stmt"/>
         <line num="57" count="1" type="stmt"/>
-        <line num="58" count="1" type="stmt"/>
-        <line num="60" count="1" type="stmt"/>
-        <line num="61" count="1" type="stmt"/>
-        <line num="63" count="1" type="stmt"/>
-        <line num="64" count="1" type="stmt"/>
-        <line num="69" count="5" type="stmt"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="66" count="2" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="68" count="2" type="stmt"/>
+        <line num="69" count="2" type="stmt"/>
+        <line num="71" count="0" type="stmt"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="77" count="5" type="stmt"/>
       </file>
     </package>
     <package name="src.middleware">
@@ -454,7 +460,7 @@
       </file>
     </package>
     <package name="src.routes">
-      <metrics statements="35" coveredstatements="35" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <metrics statements="36" coveredstatements="36" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       <file name="authRoute.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/routes/authRoute.ts">
         <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="5" type="stmt"/>
@@ -490,17 +496,18 @@
         <line num="17" count="1" type="stmt"/>
       </file>
       <file name="postsRoute.ts" path="/Users/liron_dabach/Documents/לימודים/שנה ג׳/נושאים מתקדמים באפליקציות אינטרנטיות/Project/Aura/src/routes/postsRoute.ts">
-        <metrics statements="10" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <metrics statements="11" coveredstatements="11" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="5" type="stmt"/>
         <line num="2" count="5" type="stmt"/>
         <line num="3" count="5" type="stmt"/>
         <line num="5" count="5" type="stmt"/>
-        <line num="26" count="5" type="stmt"/>
-        <line num="52" count="5" type="stmt"/>
-        <line num="80" count="5" type="stmt"/>
-        <line num="118" count="5" type="stmt"/>
-        <line num="150" count="5" type="stmt"/>
-        <line num="152" count="5" type="stmt"/>
+        <line num="8" count="5" type="stmt"/>
+        <line num="10" count="5" type="stmt"/>
+        <line num="12" count="5" type="stmt"/>
+        <line num="14" count="5" type="stmt"/>
+        <line num="16" count="5" type="stmt"/>
+        <line num="18" count="5" type="stmt"/>
+        <line num="20" count="5" type="stmt"/>
       </file>
     </package>
   </project>

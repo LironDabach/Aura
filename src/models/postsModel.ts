@@ -14,6 +14,10 @@ const postSchema = new mongoose.Schema({
     ref: "user",
     required: true,
   },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 export default mongoose.model("post", postSchema);

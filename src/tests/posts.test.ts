@@ -29,6 +29,7 @@ afterAll(async () => {
 
 describe("Posts CRUD API", () => {
   test("creates a post", async () => {
+    const beforeCreate = Date.now();
     const response = await request(app)
       .post("/post")
       .set("Authorization", `Bearer ${authToken}`)
@@ -36,11 +37,17 @@ describe("Posts CRUD API", () => {
         title: "First post",
         body: "Hello from tests",
         senderID: userId,
+        date: "2000-01-01T00:00:00.000Z",
       });
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("_id");
     expect(response.body.title).toBe("First post");
+    expect(response.body).toHaveProperty("date");
+    expect(Number.isNaN(Date.parse(response.body.date))).toBe(false);
+    expect(new Date(response.body.date).getTime()).toBeGreaterThanOrEqual(
+      beforeCreate,
+    );
     createdPostId = response.body._id;
   });
 
@@ -75,6 +82,26 @@ describe("Posts CRUD API", () => {
     expect(response.body).toHaveProperty("_id", createdPostId);
   });
 
+  test("gets posts by user id", async () => {
+    const response = await request(app).get(`/post/user/${userId}`);
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
+    response.body.forEach((post: { senderID: string }) => {
+      expect(post.senderID).toBe(userId);
+    });
+  });
+
+  test("gets posts by user id returns empty array for user without posts", async () => {
+    const noPostsUserId = new mongoose.Types.ObjectId().toString();
+    const response = await request(app).get(`/post/user/${noPostsUserId}`);
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body).toHaveLength(0);
+  });
+
   test("updates a post", async () => {
     const response = await request(app)
       .put(`/post/${createdPostId}`)
@@ -103,6 +130,15 @@ describe("Posts CRUD API", () => {
       .put(`/post/${createdPostId}`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({ senderID: otherUserId, title: "Attempt change" });
+
+    expect(response.status).toBe(400);
+  });
+
+  test("update rejects changing the post date", async () => {
+    const response = await request(app)
+      .put(`/post/${createdPostId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ date: "2030-01-01T00:00:00.000Z", title: "Attempt date change" });
 
     expect(response.status).toBe(400);
   });
