@@ -19,6 +19,7 @@ const otherUserId = new mongoose.Types.ObjectId().toString();
 let createdPostId: string;
 let createdLikeId: string;
 let createdOtherLikeId: string;
+let createdAutoSenderLikeId: string;
 let createdNoLikesPostId: string;
 
 beforeAll(async () => {
@@ -43,7 +44,11 @@ beforeAll(async () => {
 }, 30000);
 
 afterAll(async () => {
-  const likeIds = [createdLikeId, createdOtherLikeId].filter(Boolean);
+  const likeIds = [
+    createdLikeId,
+    createdOtherLikeId,
+    createdAutoSenderLikeId,
+  ].filter(Boolean);
   if (likeIds.length > 0) {
     await likesModel.deleteMany({ _id: { $in: likeIds } });
   }
@@ -84,6 +89,8 @@ describe("Likes CRUD API", () => {
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("_id");
     expect(response.body.postID).toBe(createdPostId);
+    expect(response.body.senderID).toBe(userId);
+    expect(response.body).toHaveProperty("date");
     createdLikeId = response.body._id;
   });
 
@@ -99,6 +106,8 @@ describe("Likes CRUD API", () => {
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("_id");
     expect(response.body.postID).toBe(createdPostId);
+    expect(response.body.senderID).toBe(otherUserId);
+    expect(response.body).toHaveProperty("date");
     createdOtherLikeId = response.body._id;
   });
 
@@ -125,20 +134,24 @@ describe("Likes CRUD API", () => {
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.length).toBeGreaterThan(0);
-    response.body.forEach((like: { postID: string }) => {
+    response.body.forEach((like: { postID: string; date: string }) => {
       expect(like.postID).toBe(createdPostId);
+      expect(typeof like.date).toBe("string");
     });
   });
 
-  test("create fails when senderID is missing", async () => {
+  test("create sets senderID from token when missing in payload", async () => {
     const response = await request(app)
       .post("/like")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${otherAuthToken}`)
       .send({
         postID: createdPostId,
       });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(201);
+    expect(response.body.senderID).toBe(otherUserId);
+    expect(response.body).toHaveProperty("date");
+    createdAutoSenderLikeId = response.body._id;
   });
 
 
@@ -160,13 +173,13 @@ describe("Likes CRUD API", () => {
     expect(response.status).toBe(404);
   });
 
-  test("update returns 500 when owner field is unavailable", async () => {
+  test("update rejects senderID change", async () => {
     const response = await request(app)
       .put(`/like/${createdLikeId}`)
       .set("Authorization", `Bearer ${authToken}`)
-      .send({ postID: createdPostId });
+      .send({ senderID: otherUserId });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
   });
 
   test("delete returns 404 when like is missing", async () => {
@@ -178,12 +191,12 @@ describe("Likes CRUD API", () => {
     expect(response.status).toBe(404);
   });
 
-  test("delete returns 500 when owner field is unavailable", async () => {
+  test("delete succeeds for creator", async () => {
     const response = await request(app)
       .delete(`/like/${createdLikeId}`)
       .set("Authorization", `Bearer ${authToken}`);
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(200);
   });
 
   test("delete requires authentication", async () => {

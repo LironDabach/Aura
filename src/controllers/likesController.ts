@@ -11,7 +11,7 @@ class LikesController extends baseController {
   // Override create method to associate like with authenticated user
   async create(req: AuthRequest, res: Response) {
     if (req.user) {
-      req.body.userID = req.user._id; // Associate like with user ID from token
+      req.body.senderID = req.user._id; // Associate like with user ID from token
     }
     return super.create(req, res);
   }
@@ -26,7 +26,7 @@ class LikesController extends baseController {
         return;
       }
       // // Check if the authenticated user is the creator of the like
-      if (req.user && like.userID.toString() === req.user._id) {
+      if (req.user && like.senderID.toString() === req.user._id) {
         super.del(req, res);
         return;
       } else {
@@ -49,12 +49,15 @@ class LikesController extends baseController {
         return;
       }
       // Check if the authenticated user is the creator of the like
-      if (!req.user || like.userID.toString() !== req.user._id) {
+      if (!req.user || like.senderID.toString() !== req.user._id) {
         res.status(403).send("Forbidden: You are not the creator of this like");
         return;
       }
       // Prevent changing userId field
-      if (req.body.userID && req.body.userID !== like.userID.toString()) {
+      if (
+        req.body.senderID &&
+        req.body.senderID !== like.senderID.toString()
+      ) {
         res.status(400).send("Cannot change creator of the like");
         return;
       }
@@ -82,7 +85,7 @@ class LikesController extends baseController {
   async createByPostId(req: AuthRequest, res: Response) {
     const postID = req.params.postID;
     if (req.user) {
-      req.body.userID = req.user._id; // Associate like with user ID from token
+      req.body.senderID = req.user._id; // Associate like with user ID from token
     }
     req.body.postID = postID; // Associate like with the post ID from the URL
     return super.create(req, res);
@@ -94,13 +97,14 @@ class LikesController extends baseController {
     try {
       const like = await this.model.findOne({
         postID: postID,
-        userID: req.user?._id,
+        senderID: req.user?._id,
       });
       if (!like) {
         res.status(404).send("Like not found for this post by the user");
         return;
       }
-      super.del(req, res);
+      await this.model.findByIdAndDelete(like._id);
+      res.status(200).json(like);
       return;
     } catch (err) {
       console.error(err);
