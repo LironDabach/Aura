@@ -9,7 +9,7 @@ export const register = async (data: { username: string; email: string; password
   return res.data;
 };
 
-export const login = async (data: { username: string; email: string; password: string }): Promise<AuthTokens> => {
+export const login = async (data: { username: string; password: string }): Promise<AuthTokens> => {
   const res = await api.post("/auth/login", data);
   return res.data;
 };

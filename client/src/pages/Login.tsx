@@ -6,7 +6,7 @@ import "../auth.css";
 import logo from "../assets/logo.svg";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ const Login: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      const tokens = await login({ username: email, email, password } as any);
+      const tokens = await login({ username, password });
       localStorage.setItem("token", tokens.token);
       localStorage.setItem("refreshToken", tokens.refreshToken);
       navigate("/feed");
@@ -40,8 +40,8 @@ const Login: React.FC = () => {
           <h2>Login</h2>
           <form onSubmit={onSubmit}>
             <div className="field">
-              <label>Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <label>Username</label>
+              <input value={username} onChange={(e) => setUsername(e.target.value)} required />
             </div>
             <div className="field">
               <label>Password</label>

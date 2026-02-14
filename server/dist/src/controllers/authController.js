@@ -59,19 +59,18 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const username = req.body.username;
-    const email = req.body.email;
     const password = req.body.password;
-    if (!username || !email || !password) {
-        return sendError(400, "Username, email and password are required", res);
+    if (!username || !password) {
+        return sendError(400, "Username and password are required", res);
     }
     try {
-        const user = yield usersModel_1.default.findOne({ username: username, email: email });
+        const user = yield usersModel_1.default.findOne({ username: username });
         if (!user) {
-            return sendError(401, "Invalid username or email", res);
+            return sendError(401, "Invalid username or password", res);
         }
         const isMatch = yield bcrypt_1.default.compare(password, user.password);
         if (!isMatch) {
-            return sendError(401, "Invalid password", res);
+            return sendError(401, "Invalid username or password", res);
         }
         const tokens = generateToken(user._id.toString());
         user.refreshTokens.push(tokens.refreshToken);

@@ -88,10 +88,9 @@ describe("Auth API", () => {
     errorSpy.mockRestore();
   });
 
-  test("login requires username, email and password", async () => {
+  test("login requires username and password", async () => {
     const response = await request(app).post("/auth/login").send({
       username,
-      email,
     });
 
     expect(response.status).toBe(400);
@@ -101,7 +100,6 @@ describe("Auth API", () => {
   test("login fails when user is not found", async () => {
     const response = await request(app).post("/auth/login").send({
       username: `${username}_missing`,
-      email: `missing_${email}`,
       password,
     });
 
@@ -112,7 +110,6 @@ describe("Auth API", () => {
   test("logs in a user and returns new tokens", async () => {
     const response = await request(app).post("/auth/login").send({
       username,
-      email,
       password,
     });
 
@@ -132,7 +129,6 @@ describe("Auth API", () => {
   test("login fails with invalid password", async () => {
     const response = await request(app).post("/auth/login").send({
       username,
-      email,
       password: "WrongPass123!",
     });
 
@@ -147,7 +143,6 @@ describe("Auth API", () => {
 
     const response = await request(app).post("/auth/login").send({
       username,
-      email,
       password,
     });
 

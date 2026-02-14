@@ -60,21 +60,20 @@ const register = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
   const username = req.body.username;
-  const email = req.body.email;
   const password = req.body.password;
 
-  if (!username || !email || !password) {
-    return sendError(400, "Username, email and password are required", res);
+  if (!username || !password) {
+    return sendError(400, "Username and password are required", res);
   }
 
   try {
-    const user = await User.findOne({ username: username, email: email });
+    const user = await User.findOne({ username: username });
     if (!user) {
-      return sendError(401, "Invalid username or email", res);
+      return sendError(401, "Invalid username or password", res);
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return sendError(401, "Invalid password", res);
+      return sendError(401, "Invalid username or password", res);
     }
 
     const tokens = generateToken(user._id.toString());

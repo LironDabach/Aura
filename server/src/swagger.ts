@@ -73,10 +73,9 @@ const buildSwaggerSpec = () => {
             type: "object",
             properties: {
               username: { type: "string", example: "liron_dabach" },
-              email: { type: "string", example: "liron.dabach@example.com" },
               password: { type: "string", example: "LironDabach123!" },
             },
-            required: ["username", "email", "password"],
+            required: ["username", "password"],
           },
           RefreshTokenRequest: {
             type: "object",

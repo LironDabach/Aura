@@ -17,7 +17,7 @@ const Register: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      await register({ username: username || email, email, password } as any);
+      await register({ username, email, password });
       navigate("/login");
     } catch (err: any) {
       setError(err?.response?.data?.message || "Registration failed");
@@ -40,7 +40,7 @@ const Register: React.FC = () => {
           <form onSubmit={onSubmit}>
             <div className="field">
               <label>Username</label>
-              <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="optional" />
+              <input value={username} onChange={(e) => setUsername(e.target.value)} required />
             </div>
             <div className="field">
               <label>Email</label>

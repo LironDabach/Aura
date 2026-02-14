@@ -85,10 +85,9 @@ describe("Auth API", () => {
         exitSpy.mockRestore();
         errorSpy.mockRestore();
     }));
-    test("login requires username, email and password", () => __awaiter(void 0, void 0, void 0, function* () {
+    test("login requires username and password", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).post("/auth/login").send({
             username,
-            email,
         });
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("message");
@@ -96,7 +95,6 @@ describe("Auth API", () => {
     test("login fails when user is not found", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).post("/auth/login").send({
             username: `${username}_missing`,
-            email: `missing_${email}`,
             password,
         });
         expect(response.status).toBe(401);
@@ -105,7 +103,6 @@ describe("Auth API", () => {
     test("logs in a user and returns new tokens", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).post("/auth/login").send({
             username,
-            email,
             password,
         });
         expect(response.status).toBe(200);
@@ -122,7 +119,6 @@ describe("Auth API", () => {
     test("login fails with invalid password", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).post("/auth/login").send({
             username,
-            email,
             password: "WrongPass123!",
         });
         expect(response.status).toBe(401);
@@ -134,7 +130,6 @@ describe("Auth API", () => {
             .mockRejectedValueOnce(new Error("db error"));
         const response = yield (0, supertest_1.default)(app).post("/auth/login").send({
             username,
-            email,
             password,
         });
         expect(response.status).toBe(500);

@@ -38,7 +38,7 @@ router.post("/register", authController.register);
  *   post:
  *     tags:
  *       - Auth
- *     summary: Login with username, email, and password
+ *     summary: Login with username and password
  *     requestBody:
  *       required: true
  *       content:
