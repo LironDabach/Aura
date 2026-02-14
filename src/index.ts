@@ -5,6 +5,7 @@ import commentsRoute from "./routes/commentsRoute";
 import authRoute from "./routes/authRoute";
 import dotenv from "dotenv";
 import { setupSwagger } from "./swagger";
+import path from "path";
 
 
 dotenv.config({ path: ".env.dev" });
@@ -17,6 +18,15 @@ setupSwagger(app);
 app.use("/post", postsRoute);
 app.use("/comment", commentsRoute);
 app.use("/auth", authRoute);
+
+// Serve React static files from dist
+const distPath = path.join(__dirname, "../client/dist");
+app.use(express.static(distPath));
+
+// SPA fallback: route all unmatched requests to index.html (for React Router)
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
 
 const initApp = () => {
   const pr = new Promise<Express>((resolve, reject) => {
