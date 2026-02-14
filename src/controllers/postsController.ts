@@ -12,6 +12,8 @@ class PostsController extends baseController {
     if (req.user) {
       req.body.senderID = req.user._id; // Associate post with user ID from token
     }
+    // Keep post date server-managed to prevent spoofing.
+    req.body.date = new Date();
     return super.create(req, res);
   }
 
@@ -25,6 +27,10 @@ class PostsController extends baseController {
       }
       if (req.body.senderID && req.body.senderID !== post.senderID.toString()) {
         res.status(400).send("Error: Cannot change creator of the post");
+        return;
+      }
+      if (req.body.date && req.body.date !== post.date.toISOString()) {
+        res.status(400).send("Error: Cannot change post date");
         return;
       }
       if (req.user && post.senderID.toString() !== req.user._id) {

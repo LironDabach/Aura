@@ -18,6 +18,10 @@ const postSchema = new mongoose_1.default.Schema({
         ref: "user",
         required: true,
     },
+    date: {
+        type: Date,
+        default: Date.now,
+    },
 });
 exports.default = mongoose_1.default.model("post", postSchema);
 //# sourceMappingURL=postsModel.js.map
