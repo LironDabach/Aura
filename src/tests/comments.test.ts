@@ -63,6 +63,8 @@ describe("Comments By Post ID API", () => {
     expect(response.body).toHaveProperty("_id");
     expect(response.body.postID).toBe(createdPostId);
     expect(response.body.userID).toBe(userId);
+    expect(response.body).toHaveProperty("date");
+    expect(Number.isNaN(Date.parse(response.body.date))).toBe(false);
     createdCommentId = response.body._id;
   });
 
@@ -79,6 +81,8 @@ describe("Comments By Post ID API", () => {
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("_id");
     expect(response.body.userID).toBe(otherUserId);
+    expect(response.body).toHaveProperty("date");
+    expect(Number.isNaN(Date.parse(response.body.date))).toBe(false);
     createdOtherCommentId = response.body._id;
   });
 
@@ -130,13 +134,14 @@ describe("Comments By Post ID API", () => {
     expect(response.status).toBe(403);
   });
 
-  test("update by post id rejects changing user or post", async () => {
+  test("update by post id rejects changing user, post or date", async () => {
     const response = await request(app)
       .put(`/comment/post/${createdPostId}/${createdCommentId}`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({
         userID: otherUserId,
         postID: new mongoose.Types.ObjectId().toString(),
+        date: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
         content: "Attempt change",
       });
 

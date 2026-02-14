@@ -19,6 +19,10 @@ const commentsSchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
     },
+    date: {
+        type: Date,
+        default: Date.now,
+    },
 });
 exports.default = mongoose_1.default.model("comment", commentsSchema);
 //# sourceMappingURL=commentsModel.js.map

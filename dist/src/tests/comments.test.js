@@ -123,13 +123,14 @@ describe("Comments By Post ID API", () => {
             .send({ content: "Should fail" });
         expect(response.status).toBe(403);
     }));
-    test("update by post id rejects changing user or post", () => __awaiter(void 0, void 0, void 0, function* () {
+    test("update by post id rejects changing user, post or date", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
             .put(`/comment/post/${createdPostId}/${createdCommentId}`)
             .set("Authorization", `Bearer ${authToken}`)
             .send({
             userID: otherUserId,
             postID: new mongoose_1.default.Types.ObjectId().toString(),
+            date: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
             content: "Attempt change",
         });
         expect(response.status).toBe(400);
