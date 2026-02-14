@@ -49,55 +49,55 @@ const seed = async () => {
       await likesModel.deleteMany({ postID: { $in: seededPostIds } });
       await postsModel.deleteMany({ _id: { $in: seededPostIds } });
     }
+
+    const users = await Promise.all(
+      REQUIRED_USERS.map(async (user) => {
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        return usersModel.findOneAndUpdate(
+          { username: user.username },
+          {
+            username: user.username,
+            email: user.email,
+            password: hashedPassword,
+            refreshTokens: [],
+          },
+          {
+            new: true,
+            upsert: true,
+            setDefaultsOnInsert: true,
+          },
+        );
+      }),
+    );
+
+    const userIds = users.map((user) => user!._id);
+
+    const postsToCreate = Array.from({ length: 12 }, (_, i) => ({
+      title: `${SEED_TAG} Post ${i + 1}`,
+      body: `${SEED_TAG} Body for post ${i + 1}`,
+      senderID: userIds[i % userIds.length],
+    }));
+    const createdPosts = await postsModel.insertMany(postsToCreate);
+
+    const commentsToCreate = Array.from({ length: 20 }, (_, i) => ({
+      postID: createdPosts[i % createdPosts.length]._id,
+      userID: userIds[i % userIds.length],
+      content: `${SEED_TAG} Comment ${i + 1}`,
+    }));
+    const createdComments = await commentsModel.insertMany(commentsToCreate);
+
+    const likesToCreate = Array.from({ length: 20 }, (_, i) => ({
+      postID: createdPosts[i % createdPosts.length]._id,
+      senderID: userIds[(i + 1) % userIds.length],
+    }));
+    const createdLikes = await likesModel.insertMany(likesToCreate);
+
+    console.log("Seed completed:");
+    console.log(`users: ${users.length} (only liron_dabach and shiran_levi)`);
+    console.log(`posts: ${createdPosts.length}`);
+    console.log(`comments: ${createdComments.length}`);
+    console.log(`likes: ${createdLikes.length}`);
   }
-
-  const users = await Promise.all(
-    REQUIRED_USERS.map(async (user) => {
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      return usersModel.findOneAndUpdate(
-        { username: user.username },
-        {
-          username: user.username,
-          email: user.email,
-          password: hashedPassword,
-          refreshTokens: [],
-        },
-        {
-          new: true,
-          upsert: true,
-          setDefaultsOnInsert: true,
-        },
-      );
-    }),
-  );
-
-  const userIds = users.map((user) => user!._id);
-
-  const postsToCreate = Array.from({ length: 12 }, (_, i) => ({
-    title: `${SEED_TAG} Post ${i + 1}`,
-    body: `${SEED_TAG} Body for post ${i + 1}`,
-    senderID: userIds[i % userIds.length],
-  }));
-  const createdPosts = await postsModel.insertMany(postsToCreate);
-
-  const commentsToCreate = Array.from({ length: 20 }, (_, i) => ({
-    postID: createdPosts[i % createdPosts.length]._id,
-    userID: userIds[i % userIds.length],
-    content: `${SEED_TAG} Comment ${i + 1}`,
-  }));
-  const createdComments = await commentsModel.insertMany(commentsToCreate);
-
-  const likesToCreate = Array.from({ length: 20 }, (_, i) => ({
-    postID: createdPosts[i % createdPosts.length]._id,
-    senderID: userIds[(i + 1) % userIds.length],
-  }));
-  const createdLikes = await likesModel.insertMany(likesToCreate);
-
-  console.log("Seed completed:");
-  console.log(`users: ${users.length} (only liron_dabach and shiran_levi)`);
-  console.log(`posts: ${createdPosts.length}`);
-  console.log(`comments: ${createdComments.length}`);
-  console.log(`likes: ${createdLikes.length}`);
 };
 
 seed()
