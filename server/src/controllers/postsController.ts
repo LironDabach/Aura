@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import baseController from "../controllers/baseController";
+import baseController from "./baseController";
 import postsModel from "../models/postsModel";
 import { AuthRequest } from "../middleware/authMiddleware";
 

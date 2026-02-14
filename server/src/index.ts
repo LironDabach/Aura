@@ -2,6 +2,7 @@ import express, { Express } from "express";
 import mongoose from "mongoose";
 import postsRoute from "./routes/postsRoute";
 import commentsRoute from "./routes/commentsRoute";
+import likesRoute from "./routes/likesRoute";
 import authRoute from "./routes/authRoute";
 import dotenv from "dotenv";
 import { setupSwagger } from "./swagger";
@@ -17,6 +18,7 @@ setupSwagger(app);
 // // API routes
 app.use("/post", postsRoute);
 app.use("/comment", commentsRoute);
+app.use("/like", likesRoute);
 app.use("/auth", authRoute);
 
 // Serve React static files from dist
