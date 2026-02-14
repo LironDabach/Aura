@@ -15,6 +15,10 @@ const likeSchema = new mongoose_1.default.Schema({
         ref: "user",
         required: true,
     },
+    date: {
+        type: Date,
+        default: Date.now,
+    },
 });
 exports.default = mongoose_1.default.model("like", likeSchema);
 //# sourceMappingURL=likesModel.js.map

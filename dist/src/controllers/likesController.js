@@ -25,7 +25,7 @@ class LikesController extends baseController_1.default {
         });
         return __awaiter(this, void 0, void 0, function* () {
             if (req.user) {
-                req.body.userID = req.user._id; // Associate like with user ID from token
+                req.body.senderID = req.user._id; // Associate like with user ID from token
             }
             return _super.create.call(this, req, res);
         });
@@ -44,7 +44,7 @@ class LikesController extends baseController_1.default {
                     return;
                 }
                 // // Check if the authenticated user is the creator of the like
-                if (req.user && like.userID.toString() === req.user._id) {
+                if (req.user && like.senderID.toString() === req.user._id) {
                     _super.del.call(this, req, res);
                     return;
                 }
@@ -73,12 +73,13 @@ class LikesController extends baseController_1.default {
                     return;
                 }
                 // Check if the authenticated user is the creator of the like
-                if (!req.user || like.userID.toString() !== req.user._id) {
+                if (!req.user || like.senderID.toString() !== req.user._id) {
                     res.status(403).send("Forbidden: You are not the creator of this like");
                     return;
                 }
                 // Prevent changing userId field
-                if (req.body.userID && req.body.userID !== like.userID.toString()) {
+                if (req.body.senderID &&
+                    req.body.senderID !== like.senderID.toString()) {
                     res.status(400).send("Cannot change creator of the like");
                     return;
                 }
@@ -113,7 +114,7 @@ class LikesController extends baseController_1.default {
         return __awaiter(this, void 0, void 0, function* () {
             const postID = req.params.postID;
             if (req.user) {
-                req.body.userID = req.user._id; // Associate like with user ID from token
+                req.body.senderID = req.user._id; // Associate like with user ID from token
             }
             req.body.postID = postID; // Associate like with the post ID from the URL
             return _super.create.call(this, req, res);
@@ -121,22 +122,20 @@ class LikesController extends baseController_1.default {
     }
     // Delete a like for a specific post by the authenticated user
     delByPostId(req, res) {
-        const _super = Object.create(null, {
-            del: { get: () => super.del }
-        });
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             const postID = req.params.postID;
             try {
                 const like = yield this.model.findOne({
                     postID: postID,
-                    userID: (_a = req.user) === null || _a === void 0 ? void 0 : _a._id,
+                    senderID: (_a = req.user) === null || _a === void 0 ? void 0 : _a._id,
                 });
                 if (!like) {
                     res.status(404).send("Like not found for this post by the user");
                     return;
                 }
-                _super.del.call(this, req, res);
+                yield this.model.findByIdAndDelete(like._id);
+                res.status(200).json(like);
                 return;
             }
             catch (err) {

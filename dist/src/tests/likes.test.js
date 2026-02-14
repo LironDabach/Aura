@@ -30,6 +30,7 @@ const otherUserId = new mongoose_1.default.Types.ObjectId().toString();
 let createdPostId;
 let createdLikeId;
 let createdOtherLikeId;
+let createdAutoSenderLikeId;
 let createdNoLikesPostId;
 beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     app = yield (0, index_1.default)();
@@ -49,7 +50,11 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     otherAuthToken = jsonwebtoken_1.default.sign({ _id: otherUserId }, secret, { expiresIn: "1h" });
 }), 30000);
 afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
-    const likeIds = [createdLikeId, createdOtherLikeId].filter(Boolean);
+    const likeIds = [
+        createdLikeId,
+        createdOtherLikeId,
+        createdAutoSenderLikeId,
+    ].filter(Boolean);
     if (likeIds.length > 0) {
         yield likesModel_1.default.deleteMany({ _id: { $in: likeIds } });
     }
@@ -84,6 +89,8 @@ describe("Likes CRUD API", () => {
         expect(response.status).toBe(201);
         expect(response.body).toHaveProperty("_id");
         expect(response.body.postID).toBe(createdPostId);
+        expect(response.body.senderID).toBe(userId);
+        expect(response.body).toHaveProperty("date");
         createdLikeId = response.body._id;
     }));
     test("creates a like by post id route", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -97,6 +104,8 @@ describe("Likes CRUD API", () => {
         expect(response.status).toBe(201);
         expect(response.body).toHaveProperty("_id");
         expect(response.body.postID).toBe(createdPostId);
+        expect(response.body.senderID).toBe(otherUserId);
+        expect(response.body).toHaveProperty("date");
         createdOtherLikeId = response.body._id;
     }));
     test("returns empty likes list for a post with no likes", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -118,16 +127,20 @@ describe("Likes CRUD API", () => {
         expect(response.body.length).toBeGreaterThan(0);
         response.body.forEach((like) => {
             expect(like.postID).toBe(createdPostId);
+            expect(typeof like.date).toBe("string");
         });
     }));
-    test("create fails when senderID is missing", () => __awaiter(void 0, void 0, void 0, function* () {
+    test("create sets senderID from token when missing in payload", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
             .post("/like")
-            .set("Authorization", `Bearer ${authToken}`)
+            .set("Authorization", `Bearer ${otherAuthToken}`)
             .send({
             postID: createdPostId,
         });
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(201);
+        expect(response.body.senderID).toBe(otherUserId);
+        expect(response.body).toHaveProperty("date");
+        createdAutoSenderLikeId = response.body._id;
     }));
     test("update requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
@@ -143,12 +156,12 @@ describe("Likes CRUD API", () => {
             .send({ postID: createdPostId });
         expect(response.status).toBe(404);
     }));
-    test("update returns 500 when owner field is unavailable", () => __awaiter(void 0, void 0, void 0, function* () {
+    test("update rejects senderID change", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
             .put(`/like/${createdLikeId}`)
             .set("Authorization", `Bearer ${authToken}`)
-            .send({ postID: createdPostId });
-        expect(response.status).toBe(500);
+            .send({ senderID: otherUserId });
+        expect(response.status).toBe(400);
     }));
     test("delete returns 404 when like is missing", () => __awaiter(void 0, void 0, void 0, function* () {
         const missingId = new mongoose_1.default.Types.ObjectId().toString();
@@ -157,11 +170,11 @@ describe("Likes CRUD API", () => {
             .set("Authorization", `Bearer ${authToken}`);
         expect(response.status).toBe(404);
     }));
-    test("delete returns 500 when owner field is unavailable", () => __awaiter(void 0, void 0, void 0, function* () {
+    test("delete succeeds for creator", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
             .delete(`/like/${createdLikeId}`)
             .set("Authorization", `Bearer ${authToken}`);
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(200);
     }));
     test("delete requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).delete(`/like/${createdLikeId}`);
