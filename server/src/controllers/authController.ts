@@ -41,6 +41,11 @@ const register = async (req: Request, res: Response) => {
     return sendError(400, "Username, email and password are required", res);
   }
 
+  // Validate username: only English letters and numbers, no spaces
+  if (!/^[a-zA-Z0-9]+$/.test(username)) {
+    return sendError(400, "Username can only contain English letters and numbers", res);
+  }
+
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);

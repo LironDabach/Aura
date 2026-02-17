@@ -54,7 +54,7 @@
 }
 
 .auth-card {
-  width: 420px;
+  width: 450px;
   background: white;
   border-radius: 12px;
   padding: 36px;
@@ -68,6 +68,8 @@
   font-family: 'Comfortaa', system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-size: 44px;
   letter-spacing: 0.5px;
+  user-select: none;
+  cursor: default;
 }
 
 .field {
@@ -81,6 +83,7 @@
 }
 .field input {
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #e6e9ef;
@@ -89,6 +92,8 @@
 
 .actions { margin-top: 18px; display:flex; gap:8px; flex-direction:column; }
 .btn-primary {
+  width: 100%;
+  box-sizing: border-box;
   background: var(--primary);
   color: white;
   border: none;
@@ -98,6 +103,8 @@
   font-weight: 600;
 }
 .btn-google {
+  width: 100%;
+  box-sizing: border-box;
   background: transparent;
   border: 1px solid #e6e9ef;
   padding: 10px 12px;
