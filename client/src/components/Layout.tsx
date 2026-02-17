@@ -1,20 +1,76 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { logout } from "../services/api";
+import "../styles/layout.css";
+import logo from "../assets/logo.svg";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const hideNav = location.pathname === "/login" || location.pathname === "/register";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
   return (
     <div>
       {!hideNav && (
-        <nav style={{ display: "flex", gap: 12, padding: 12 }}>
-          <Link to="/">Home</Link>
-          <Link to="/register">Register</Link>
-          <Link to="/login">Login</Link>
-          <Link to="/feed">Feed</Link>
+        <nav className="navbar">
+          {/* Left: Brand */}
+          <Link to="/feed" className="navbar-brand">
+            <div
+              className="navbar-logo"
+              style={{
+                background: "#111",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
+                src={logo}
+                alt="aura"
+                style={{ width: 20, height: 20 }}
+              />
+            </div>
+            <div className="navbar-brand-text">
+              <span className="navbar-brand-name">aura</span>
+              <span className="navbar-brand-tagline">Your moment to shine</span>
+            </div>
+          </Link>
+
+          {/* Center: Navigation links */}
+          <div className="navbar-links">
+            <NavLink to="/feed" className={({ isActive }) => isActive ? "active" : ""}>
+              Feed
+            </NavLink>
+            <NavLink to="/profile" className={({ isActive }) => isActive ? "active" : ""}>
+              Profile
+            </NavLink>
+            <NavLink to="/create" className={({ isActive }) => isActive ? "active" : ""}>
+              Create
+            </NavLink>
+            <NavLink to="/search" className={({ isActive }) => isActive ? "active" : ""}>
+              <span className="ai-icon">✦</span>Search with AI
+            </NavLink>
+          </div>
+
+          {/* Right: Logout */}
+          <div className="navbar-actions">
+            <button
+              className="navbar-logout-btn"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              ⏻
+            </button>
+          </div>
         </nav>
       )}
-      {children}
+      <div className="page-shell">{children}</div>
     </div>
   );
 };

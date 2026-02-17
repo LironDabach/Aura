@@ -1,0 +1,17 @@
+/* ── Feed page ── */
+.feed-container {
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.feed-empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: #9ca3af;
+  font-size: 15px;
+}
+
+.feed-empty p {
+  margin: 0;
+}

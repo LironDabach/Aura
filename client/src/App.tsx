@@ -6,6 +6,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Create from "./pages/Create";
 import NotFound from "./components/NotFound";
 import Layout from "./components/Layout";
 
@@ -26,6 +28,8 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/feed" element={<RequireAuth><Layout><Dashboard /></Layout></RequireAuth>} />
+      <Route path="/profile" element={<RequireAuth><Layout><Profile /></Layout></RequireAuth>} />
+      <Route path="/create" element={<RequireAuth><Layout><Create /></Layout></RequireAuth>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

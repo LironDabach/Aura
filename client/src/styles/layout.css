@@ -1,0 +1,126 @@
+/* ── Navbar ── */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Left: brand */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.navbar-logo {
+  width: 32px;
+  height: 32px;
+}
+
+.navbar-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.navbar-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: 0.5px;
+}
+
+.navbar-brand-tagline {
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+/* Center: nav links */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.navbar-links a {
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.navbar-links a:hover {
+  color: #111;
+}
+
+.navbar-links a.active {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.navbar-links a .ai-icon {
+  margin-right: 4px;
+  font-size: 13px;
+}
+
+/* Right: logout */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #6b7280;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navbar-logout-btn:hover {
+  background: #f3f4f6;
+  color: #111;
+}
+
+/* ── Page shell ── */
+.page-shell {
+  min-height: calc(100vh - 56px);
+  background: #f6f8fb;
+}
+
+/* ── Responsive ── */
+@media (max-width: 680px) {
+  .navbar {
+    padding: 0 16px;
+  }
+
+  .navbar-links {
+    gap: 16px;
+  }
+
+  .navbar-links a {
+    font-size: 13px;
+  }
+
+  .navbar-brand-tagline {
+    display: none;
+  }
+}
