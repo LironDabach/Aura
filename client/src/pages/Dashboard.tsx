@@ -1,9 +1,9 @@
 import React from "react";
+import "../styles/feed.css";
 
 const Dashboard: React.FC = () => (
-  <div style={{ padding: 20 }}>
-    <h2>Main Feed</h2>
-    <p>Feed content will appear here.</p>
+  <div className="feed-container">
+    {/* Post cards will be rendered here */}
   </div>
 );
 
