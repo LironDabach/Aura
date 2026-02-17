@@ -7,11 +7,13 @@ import authRoute from "./routes/authRoute";
 import dotenv from "dotenv";
 import { setupSwagger } from "./swagger";
 import path from "path";
+import cors from "cors";
 
 
 dotenv.config({ path: ".env.dev" });
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 setupSwagger(app);
 
@@ -22,12 +24,12 @@ app.use("/api/like", likesRoute);
 app.use("/api/auth", authRoute);
 
 // Serve React static files from dist
-const distPath = path.join(__dirname, "../client/dist");
+const distPath = path.resolve(process.cwd(), "../client/dist");
 app.use(express.static(distPath));
 
-// SPA fallback: route all unmatched requests to index.html (for React Router)
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
+// 404 handler for all unmatched routes
+app.use((req, res) => {
+  res.status(404).json({ error: "Not Found" });
 });
 
 const initApp = () => {

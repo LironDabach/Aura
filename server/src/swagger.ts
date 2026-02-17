@@ -63,7 +63,12 @@ const buildSwaggerSpec = () => {
           RegisterRequest: {
             type: "object",
             properties: {
-              username: { type: "string", example: "shiran_levi" },
+              username: { 
+                type: "string", 
+                example: "shiranLevi",
+                pattern: "^[a-zA-Z0-9]+$",
+                description: "Only English letters and numbers (no spaces or special characters)"
+              },
               email: { type: "string", example: "shiran.levi@example.com" },
               password: { type: "string", example: "ShiranLevi123!" },
             },

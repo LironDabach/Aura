@@ -15,6 +15,13 @@ const Register: React.FC = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
+    // Validate username: only English letters and numbers, no spaces
+    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+      setError("Username can only contain English letters and numbers (no spaces or special characters)");
+      return;
+    }
+    
     setLoading(true);
     try {
       await register({ username, email, password });

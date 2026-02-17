@@ -23,7 +23,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/AuthTokens'
  *       400:
- *         description: Missing required fields
+ *         description: Missing required fields or invalid username (must contain only English letters and numbers)
  *         content:
  *           application/json:
  *             schema:
