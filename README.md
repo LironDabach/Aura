@@ -44,7 +44,7 @@ Aura/
 └── server/
     ├── package.json
     ├── tsconfig.json
-    ├── .env.dev
+    ├── .env.development
     ├── src/
     │   ├── seed.ts
     │   ├── server.ts
@@ -95,7 +95,7 @@ Aura/
 - `Likes` -> like/unlike by post
 - `Swagger` -> API documentation UI
 
-## 🌱 Environment Variables (`server/.env.dev`)
+## 🌱 Environment Variables (`server/.env.development`)
 
 ```env
 PORT=3000

@@ -114,6 +114,12 @@
 
 .alt { margin-top: 12px; text-align:center; color:var(--muted); font-size:13px }
 
+.google-btn-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 @media (max-width: 880px) {
   .auth-page { grid-template-columns: 1fr; }
   .left-panel { padding: 24px; }

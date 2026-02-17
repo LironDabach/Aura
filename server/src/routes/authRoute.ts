@@ -70,6 +70,42 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 /**
  * @openapi
+ * /auth/google:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Login or register with Google
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/GoogleLoginRequest'
+ *     responses:
+ *       200:
+ *         description: Tokens and user info issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/GoogleAuthResponse'
+ *       400:
+ *         description: Missing Google credential
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Invalid Google token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error or Google not configured
+ */
+router.post("/google", authController.googleLogin);
+/**
+ * @openapi
  * /auth/logout:
  *   post:
  *     tags:

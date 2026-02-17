@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { register } from "../services/api";
+import { register, googleLogin } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import "../auth.css";
 import logo from "../assets/logo.svg";
 
@@ -33,6 +34,26 @@ const Register: React.FC = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const response = await googleLogin(credentialResponse.credential);
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("refreshToken", response.refreshToken);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      navigate("/feed");
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Google sign up failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Google sign up failed");
+  };
+
   return (
     <div className="auth-page">
       <div className="left-panel">
@@ -60,6 +81,15 @@ const Register: React.FC = () => {
 
             <div className="actions">
               <button className="btn-primary" type="submit" disabled={loading}>{loading ? "Registering..." : "Register"}</button>
+              <div className="google-btn-wrapper">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  width="100%"
+                  text="signup_with"
+                  shape="rectangular"
+                />
+              </div>
             </div>
 
             {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}

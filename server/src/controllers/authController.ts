@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import User from "../models/usersModel";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 
 const sendError = (code: number, message: string, res: Response) => {
   res.status(code).json({ message });
@@ -76,6 +77,12 @@ const login = async (req: Request, res: Response) => {
     if (!user) {
       return sendError(401, "Invalid username or password", res);
     }
+    
+    // Check if user has a password (Google users might not have one)
+    if (!user.password) {
+      return sendError(401, "Please use Google to sign in", res);
+    }
+    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return sendError(401, "Invalid username or password", res);
@@ -147,9 +154,90 @@ const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
+const googleLogin = async (req: Request, res: Response) => {
+  const { credential } = req.body;
+
+  if (!credential) {
+    return sendError(400, "Google credential is required", res);
+  }
+
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+  if (!googleClientId) {
+    console.error("GOOGLE_CLIENT_ID is not set");
+    return sendError(500, "Google authentication not configured", res);
+  }
+
+  try {
+    const client = new OAuth2Client(googleClientId);
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: googleClientId,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      return sendError(401, "Invalid Google token", res);
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!email) {
+      return sendError(400, "Email not provided by Google", res);
+    }
+
+    // Find existing user by googleId or email
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+    if (user) {
+      // Update googleId if user exists but doesn't have it (registered with email before)
+      if (!user.googleId) {
+        user.googleId = googleId;
+        if (picture) user.profilePicture = picture;
+        await user.save();
+      }
+    } else {
+      // Create new user
+      const username = name?.replace(/\s+/g, "").toLowerCase() || email.split("@")[0];
+      
+      // Ensure unique username
+      let uniqueUsername = username;
+      let counter = 1;
+      while (await User.findOne({ username: uniqueUsername })) {
+        uniqueUsername = `${username}${counter}`;
+        counter++;
+      }
+
+      user = await User.create({
+        username: uniqueUsername,
+        email,
+        googleId,
+        profilePicture: picture,
+      });
+    }
+
+    const tokens = generateToken(user._id.toString());
+    user.refreshTokens.push(tokens.refreshToken);
+    await user.save();
+
+    res.status(200).json({
+      ...tokens,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture,
+      },
+    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    return sendError(401, "Google authentication failed", res);
+  }
+};
+
 export default {
   register,
   login,
   logout,
   refreshToken,
+  googleLogin,
 };

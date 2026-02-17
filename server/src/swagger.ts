@@ -92,6 +92,34 @@ const buildSwaggerSpec = () => {
             },
             required: ["refreshToken"],
           },
+          GoogleLoginRequest: {
+            type: "object",
+            properties: {
+              credential: {
+                type: "string",
+                description: "Google ID token received from Google Sign-In",
+                example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+              },
+            },
+            required: ["credential"],
+          },
+          GoogleAuthResponse: {
+            type: "object",
+            properties: {
+              token: { type: "string", example: "jwt-access-token" },
+              refreshToken: { type: "string", example: "jwt-refresh-token" },
+              user: {
+                type: "object",
+                properties: {
+                  _id: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b7" },
+                  username: { type: "string", example: "johndoe" },
+                  email: { type: "string", example: "john@gmail.com" },
+                  profilePicture: { type: "string", example: "https://lh3.googleusercontent.com/..." },
+                },
+              },
+            },
+            required: ["token", "refreshToken", "user"],
+          },
           Post: {
             type: "object",
             properties: {

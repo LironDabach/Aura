@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { login } from "../services/api";
+import { login, googleLogin } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import "../auth.css";
 import logo from "../assets/logo.svg";
 
@@ -28,6 +29,26 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const response = await googleLogin(credentialResponse.credential);
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("refreshToken", response.refreshToken);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      navigate("/feed");
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Google login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Google login failed");
+  };
+
   return (
     <div className="auth-page">
       <div className="left-panel">
@@ -50,7 +71,15 @@ const Login: React.FC = () => {
 
             <div className="actions">
               <button className="btn-primary" type="submit" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
-              <button type="button" className="btn-google">Login with Google</button>
+              <div className="google-btn-wrapper">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  width="100%"
+                  text="signin_with"
+                  shape="rectangular"
+                />
+              </div>
             </div>
 
             {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
