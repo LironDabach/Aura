@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import PostCard from "../components/PostCard";
+import CommentsSidebar from "../components/CommentsSidebar";
 import {
   getPosts,
   getLikesForPost,
@@ -21,6 +22,7 @@ const Dashboard: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [sidebarPostId, setSidebarPostId] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   const fetchMeta = async (newPosts: Post[]) => {
@@ -100,6 +102,20 @@ const Dashboard: React.FC = () => {
     [hasMore, loadingMore, loadMore]
   );
 
+  const handleToggleComments = (postId: string) => {
+    setSidebarPostId((prev) => (prev === postId ? null : postId));
+  };
+
+  const handleCommentCountChange = (postId: string, delta: number) => {
+    setMeta((prev) => ({
+      ...prev,
+      [postId]: {
+        ...prev[postId],
+        commentCount: Math.max(0, (prev[postId]?.commentCount ?? 0) + delta),
+      },
+    }));
+  };
+
   if (loading) {
     return <div className="feed-loading">Loading feed…</div>;
   }
@@ -121,6 +137,7 @@ const Dashboard: React.FC = () => {
           likeCount={meta[post._id]?.likeCount ?? 0}
           commentCount={meta[post._id]?.commentCount ?? 0}
           isLikedByMe={meta[post._id]?.isLikedByMe ?? false}
+          onToggleComments={() => handleToggleComments(post._id)}
         />
       ))}
 
@@ -129,6 +146,16 @@ const Dashboard: React.FC = () => {
         <div ref={sentinelRef} className="feed-loading-more">
           {loadingMore && "Loading more…"}
         </div>
+      )}
+
+      {/* Comments sidebar */}
+      {sidebarPostId && (
+        <CommentsSidebar
+          postId={sidebarPostId}
+          open={!!sidebarPostId}
+          onClose={() => setSidebarPostId(null)}
+          onCommentCountChange={handleCommentCountChange}
+        />
       )}
     </div>
   );
