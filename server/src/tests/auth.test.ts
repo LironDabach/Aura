@@ -20,9 +20,8 @@ afterAll(async () => {
 });
 
 describe("Auth API", () => {
-  const runId = Date.now().toString();
-  const username = `shiranlevi${runId}`;
-  const email = `liron.dabach3+${runId}@gmail.com`;
+  const username = "shiranlevi";
+  const email = "liron.dabach3@gmail.com";
   const password = "StrongPass123!";
   let registerRefreshToken: string;
   let loginRefreshToken: string;
@@ -70,23 +69,23 @@ describe("Auth API", () => {
 
     delete process.env.JWT_SECRET;
 
-    const response = await request(app)
-      .post("/api/auth/register")
-      .send({
+    try {
+      const response = await request(app).post("/api/auth/register").send({
         username: `${username}nosecret`,
-        email: `nosecret.${runId}@example.com`,
+        email: `nosecret${email}`,
         password,
       });
 
-    expect(response.status).toBe(500);
-    expect(errorSpy).toHaveBeenCalled();
-    expect(exitSpy).toHaveBeenCalled();
-
-    if (originalSecret !== undefined) {
-      process.env.JWT_SECRET = originalSecret;
+      expect(response.status).toBe(500);
+      expect(errorSpy).toHaveBeenCalled();
+      expect(exitSpy).toHaveBeenCalled();
+    } finally {
+      if (originalSecret !== undefined) {
+        process.env.JWT_SECRET = originalSecret;
+      }
+      exitSpy.mockRestore();
+      errorSpy.mockRestore();
     }
-    exitSpy.mockRestore();
-    errorSpy.mockRestore();
   });
 
   test("login requires username and password", async () => {
@@ -99,12 +98,10 @@ describe("Auth API", () => {
   });
 
   test("login fails when user is not found", async () => {
-    const response = await request(app)
-      .post("/api/auth/login")
-      .send({
-        username: `${username}missing`,
-        password,
-      });
+    const response = await request(app).post("/api/auth/login").send({
+      username: `${username}_missing`,
+      password,
+    });
 
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty("message");

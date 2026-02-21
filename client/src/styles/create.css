@@ -1,0 +1,131 @@
+/* ══════════════════════════════════════
+   Create Post page
+   ══════════════════════════════════════ */
+
+.create-page {
+  max-width: 520px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+.create-form {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.create-heading {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+}
+
+/* ── Error ── */
+.create-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* ── Label ── */
+.create-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-top: 8px;
+}
+
+/* ── Input & Textarea ── */
+.create-input,
+.create-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111;
+  background: #fafafa;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.create-input:focus,
+.create-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  background: #fff;
+}
+
+.create-input::placeholder,
+.create-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.create-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.55;
+}
+
+/* ── Image preview ── */
+.create-preview {
+  margin-top: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.create-preview-label {
+  display: block;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: #9ca3af;
+  background: #fafafa;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.create-preview-img {
+  width: 100%;
+  display: block;
+  max-height: 340px;
+  object-fit: cover;
+}
+
+/* ── Submit ── */
+.create-submit {
+  margin-top: 16px;
+  padding: 12px 0;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.create-submit:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.create-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.create-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

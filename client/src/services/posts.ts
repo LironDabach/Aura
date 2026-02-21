@@ -27,6 +27,11 @@ export const getPostsByUser = async (userId: string): Promise<Post[]> => {
   return res.data;
 };
 
+export const createPost = async (data: { title: string; body: string }): Promise<Post> => {
+  const res = await api.post("/api/post", data);
+  return res.data;
+};
+
 // ── Likes ──
 
 export const getLikesForPost = async (postId: string): Promise<Like[]> => {

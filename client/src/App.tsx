@@ -4,7 +4,6 @@ import React from "react";
 import "./App.css";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Create from "./pages/Create";
@@ -24,7 +23,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<RequireAuth><Layout><Home /></Layout></RequireAuth>} />
+      <Route path="/" element={<Navigate to="/feed" replace />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/feed" element={<RequireAuth><Layout><Dashboard /></Layout></RequireAuth>} />

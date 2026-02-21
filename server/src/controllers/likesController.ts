@@ -8,67 +8,6 @@ class LikesController extends baseController {
     super(likesModel);
   }
 
-  // Override create method to associate like with authenticated user
-  async create(req: AuthRequest, res: Response) {
-    if (req.user) {
-      req.body.senderID = req.user._id; // Associate like with user ID from token
-    }
-    return super.create(req, res);
-  }
-
-  // Override DELETE to ensure only creator can delete
-  async del(req: AuthRequest, res: Response) {
-    const id = req.params.id;
-    try {
-      const like = await this.model.findById(id);
-      if (!like) {
-        res.status(404).send("Like not found");
-        return;
-      }
-      // // Check if the authenticated user is the creator of the like
-      if (req.user && like.senderID.toString() === req.user._id) {
-        super.del(req, res);
-        return;
-      } else {
-        res.status(403).send("Forbidden: You are not the creator of this like");
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-      res.status(500).send("Error deleting like");
-    }
-  }
-
-  // Override update to prevent changing userId and ensure ownership
-  async update(req: AuthRequest, res: Response) {
-    const id = req.params.id;
-    try {
-      const like = await this.model.findById(id);
-      if (!like) {
-        res.status(404).send("Like not found");
-        return;
-      }
-      // Check if the authenticated user is the creator of the like
-      if (!req.user || like.senderID.toString() !== req.user._id) {
-        res.status(403).send("Forbidden: You are not the creator of this like");
-        return;
-      }
-      // Prevent changing userId field
-      if (
-        req.body.senderID &&
-        req.body.senderID !== like.senderID.toString()
-      ) {
-        res.status(400).send("Cannot change creator of the like");
-        return;
-      }
-      super.update(req, res);
-      return;
-    } catch (err) {
-      console.error(err);
-      res.status(500).send("Error updating comment");
-    }
-  }
-
   // Get all likes for a specific post
   async getByPostId(req: Request, res: Response) {
     const postID = req.params.postID;
@@ -84,6 +23,7 @@ class LikesController extends baseController {
   // Create a like for a specific post
   async createByPostId(req: AuthRequest, res: Response) {
     const postID = req.params.postID;
+    if (!req.body) req.body = {};
     if (req.user) {
       req.body.senderID = req.user._id; // Associate like with user ID from token
     }
