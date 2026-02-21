@@ -1,6 +1,7 @@
 import express from "express";
 import { authenticate } from "../middleware/authMiddleware";
 import postsController from "../controllers/postsController";
+import { uploadSingle } from "../middleware/uploadMiddleware";
 
 const router = express.Router();
 
@@ -122,6 +123,9 @@ router.get("/user/:userId", postsController.getByUserId.bind(postsController));
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/PostCreate'
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/PostCreate'
  *     responses:
  *       201:
  *         description: Post created
@@ -134,7 +138,12 @@ router.get("/user/:userId", postsController.getByUserId.bind(postsController));
  *       500:
  *         description: Internal server error
  */
-router.post("/", authenticate, postsController.create.bind(postsController));
+router.post(
+  "/",
+  authenticate,
+  uploadSingle,
+  postsController.create.bind(postsController),
+);
 
 /**
  * @openapi
@@ -158,6 +167,9 @@ router.post("/", authenticate, postsController.create.bind(postsController));
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/PostUpdate'
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/PostUpdate'
  *     responses:
  *       200:
  *         description: Post updated
@@ -176,7 +188,12 @@ router.post("/", authenticate, postsController.create.bind(postsController));
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", authenticate, postsController.update.bind(postsController));
+router.put(
+  "/:id",
+  authenticate,
+  uploadSingle,
+  postsController.update.bind(postsController),
+);
 
 /**
  * @openapi

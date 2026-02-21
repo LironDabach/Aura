@@ -20,7 +20,7 @@ const buildSwaggerSpec = () => {
         title: "Advanced Web Applications REST API",
         version: "1.0.0",
         description:
-          "REST API documentation for posts, comments, likes, and authentication.",
+          "REST API documentation for users, posts, comments, likes, uploads, and authentication.",
       },
       servers: [
         {
@@ -31,8 +31,10 @@ const buildSwaggerSpec = () => {
       tags: [
         { name: "Auth", description: "Authentication and token management" },
         { name: "Posts", description: "Post CRUD operations" },
+        { name: "Users", description: "User CRUD operations" },
         { name: "Comments", description: "Comment CRUD operations" },
         { name: "Likes", description: "Like/unlike operations" },
+        { name: "Uploads", description: "Direct file uploads" },
       ],
       components: {
         securitySchemes: {
@@ -133,6 +135,54 @@ const buildSwaggerSpec = () => {
               },
             },
           },
+          User: {
+            type: "object",
+            properties: {
+              _id: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b8" },
+              username: { type: "string", example: "johndoe" },
+              email: { type: "string", example: "john@example.com" },
+              profilePicture: {
+                type: "string",
+                example: "http://localhost:3000/api/upload/johndoe-avatar.png",
+              },
+            },
+            required: ["_id", "username", "email"],
+          },
+          UserCreate: {
+            type: "object",
+            properties: {
+              username: { type: "string", example: "johndoe" },
+              email: { type: "string", example: "john@example.com" },
+              password: { type: "string", example: "StrongPass123!" },
+              profilePicture: {
+                type: "string",
+                example: "http://localhost:3000/api/upload/johndoe-avatar.png",
+              },
+              file: {
+                type: "string",
+                format: "binary",
+                description: "Profile image file (multipart only).",
+              },
+            },
+            required: ["username", "email", "password"],
+          },
+          UserUpdate: {
+            type: "object",
+            properties: {
+              username: { type: "string", example: "john_updated" },
+              email: { type: "string", example: "john.updated@example.com" },
+              password: { type: "string", example: "NewStrongPass123!" },
+              profilePicture: {
+                type: "string",
+                example: "http://localhost:3000/api/upload/johndoe-avatar-2.png",
+              },
+              file: {
+                type: "string",
+                format: "binary",
+                description: "Profile image file (multipart only).",
+              },
+            },
+          },
           Post: {
             type: "object",
             properties: {
@@ -172,8 +222,13 @@ const buildSwaggerSpec = () => {
                 type: "string",
                 example: "https://images.example.com/posts/api-notes.jpg",
               },
+              file: {
+                type: "string",
+                format: "binary",
+                description: "Post image file (multipart only).",
+              },
             },
-            required: ["title", "body", "imageUrl"],
+            required: ["title", "body"],
           },
           PostUpdate: {
             type: "object",
@@ -184,7 +239,22 @@ const buildSwaggerSpec = () => {
                 type: "string",
                 example: "https://images.example.com/posts/updated-cover.jpg",
               },
+              file: {
+                type: "string",
+                format: "binary",
+                description: "Post image file (multipart only).",
+              },
             },
+          },
+          UploadResponse: {
+            type: "object",
+            properties: {
+              url: {
+                type: "string",
+                example: "http://localhost:3000/api/upload/example.png",
+              },
+            },
+            required: ["url"],
           },
           Like: {
             type: "object",
