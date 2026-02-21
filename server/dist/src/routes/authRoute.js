@@ -27,7 +27,7 @@ const router = express_1.default.Router();
  *             schema:
  *               $ref: '#/components/schemas/AuthTokens'
  *       400:
- *         description: Missing required fields
+ *         description: Missing required fields or invalid username (must contain only English letters and numbers)
  *         content:
  *           application/json:
  *             schema:
@@ -72,6 +72,42 @@ router.post("/register", authController_1.default.register);
  *         description: Internal server error
  */
 router.post("/login", authController_1.default.login);
+/**
+ * @openapi
+ * /auth/google:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Login or register with Google
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/GoogleLoginRequest'
+ *     responses:
+ *       200:
+ *         description: Tokens and user info issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/GoogleAuthResponse'
+ *       400:
+ *         description: Missing Google credential
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Invalid Google token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error or Google not configured
+ */
+router.post("/google", authController_1.default.googleLogin);
 /**
  * @openapi
  * /auth/logout:

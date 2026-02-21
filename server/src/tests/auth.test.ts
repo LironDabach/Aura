@@ -62,11 +62,9 @@ describe("Auth API", () => {
 
   test("register fails when JWT_SECRET is missing and process.exit is called", async () => {
     const originalSecret = process.env.JWT_SECRET;
-    const exitSpy = jest
-      .spyOn(process, "exit")
-      .mockImplementation((() => {
-        throw new Error("process.exit called");
-      }) as never);
+    const exitSpy = jest.spyOn(process, "exit").mockImplementation((() => {
+      throw new Error("process.exit called");
+    }) as never);
     const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
     delete process.env.JWT_SECRET;
@@ -298,7 +296,7 @@ describe("Auth API", () => {
     expect(response.body).toHaveProperty("message");
   });
 
-  test("tokens verify with .env.test JWT_SECRET and fail with a wrong secret", () => {
+  test("tokens verify with .env.development JWT_SECRET and fail with a wrong secret", () => {
     expect(usedSecret).toBeTruthy();
 
     const accessPayload = jwt.verify(loginAccessToken, usedSecret) as {

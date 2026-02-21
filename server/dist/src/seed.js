@@ -19,7 +19,7 @@ const usersModel_1 = __importDefault(require("./models/usersModel"));
 const postsModel_1 = __importDefault(require("./models/postsModel"));
 const commentsModel_1 = __importDefault(require("./models/commentsModel"));
 const likesModel_1 = __importDefault(require("./models/likesModel"));
-dotenv_1.default.config({ path: ".env.dev" });
+dotenv_1.default.config({ path: "../.env.development" });
 const SEED_TAG = "SEED_AURA";
 const REQUIRED_USERS = [
     {

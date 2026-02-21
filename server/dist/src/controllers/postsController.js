@@ -18,6 +18,55 @@ class PostsController extends baseController_1.default {
     constructor() {
         super(postsModel_1.default);
     }
+    // Override getAll to populate sender info + support pagination
+    getAll(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const page = Math.max(1, parseInt(req.query.page) || 1);
+                const defaultLimit = parseInt(process.env.POSTS_PER_PAGE || "5");
+                const limit = Math.max(1, parseInt(req.query.limit) || defaultLimit);
+                const skip = (page - 1) * limit;
+                const [posts, total] = yield Promise.all([
+                    this.model
+                        .find()
+                        .populate("senderID", "username profilePicture")
+                        .sort({ date: -1 })
+                        .skip(skip)
+                        .limit(limit),
+                    this.model.countDocuments(),
+                ]);
+                return res.json({
+                    posts,
+                    page,
+                    totalPages: Math.ceil(total / limit),
+                    total,
+                });
+            }
+            catch (err) {
+                console.error(err);
+                res.status(500).send("Error: Can't retrieve posts");
+            }
+        });
+    }
+    // Override getById to populate sender info
+    getById(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const id = req.params.id;
+            try {
+                const post = yield this.model
+                    .findById(id)
+                    .populate("senderID", "username profilePicture");
+                if (!post) {
+                    return res.status(404).send("Error: Not found");
+                }
+                return res.json(post);
+            }
+            catch (err) {
+                console.error(err);
+                res.status(500).send("Error: Can't retrieve post by ID");
+            }
+        });
+    }
     create(req, res) {
         const _super = Object.create(null, {
             create: { get: () => super.create }

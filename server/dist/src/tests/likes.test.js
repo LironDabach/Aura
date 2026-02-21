@@ -16,9 +16,6 @@ const supertest_1 = __importDefault(require("supertest"));
 const index_1 = __importDefault(require("../index"));
 const likesModel_1 = __importDefault(require("../models/likesModel"));
 const postsModel_1 = __importDefault(require("../models/postsModel"));
-const likesRoute_1 = __importDefault(require("../routes/likesRoute"));
-const likesController_1 = __importDefault(require("../controllers/likesController"));
-const authMiddleware_1 = require("../middleware/authMiddleware");
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 jest.setTimeout(30000);
@@ -34,11 +31,6 @@ let createdAutoSenderLikeId;
 let createdNoLikesPostId;
 beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     app = yield (0, index_1.default)();
-    // Keep this test aligned with other suites: initialize app once and seed DB data.
-    app.use("/like", likesRoute_1.default);
-    app.post("/like", authMiddleware_1.authenticate, likesController_1.default.create.bind(likesController_1.default));
-    app.put("/like/:id", authMiddleware_1.authenticate, likesController_1.default.update.bind(likesController_1.default));
-    app.delete("/like/:id", authMiddleware_1.authenticate, likesController_1.default.del.bind(likesController_1.default));
     const createdPost = yield postsModel_1.default.create({
         title: "Post for likes",
         body: "Seed post body",
@@ -65,25 +57,34 @@ afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
     yield mongoose_1.default.connection.close();
 }));
 describe("Likes CRUD API", () => {
-    test("create requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).post("/like").send({
+    test("legacy create endpoint is not exposed", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app).post("/api/like").send({
             postID: createdPostId,
             senderID: userId,
         });
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(404);
+    }));
+    test("legacy update endpoint is not exposed", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .put(`/api/like/${new mongoose_1.default.Types.ObjectId().toString()}`)
+            .send({ senderID: userId });
+        expect(response.status).toBe(404);
+    }));
+    test("legacy delete endpoint is not exposed", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app).delete(`/api/like/${new mongoose_1.default.Types.ObjectId().toString()}`);
+        expect(response.status).toBe(404);
     }));
     test("create by post id requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).post(`/like/post/${createdPostId}`).send({
+        const response = yield (0, supertest_1.default)(app).post(`/api/like/post/${createdPostId}`).send({
             senderID: userId,
         });
         expect(response.status).toBe(401);
     }));
     test("creates a like", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .post("/like")
+            .post(`/api/like/post/${createdPostId}`)
             .set("Authorization", `Bearer ${authToken}`)
             .send({
-            postID: createdPostId,
             senderID: userId,
         });
         expect(response.status).toBe(201);
@@ -95,7 +96,7 @@ describe("Likes CRUD API", () => {
     }));
     test("creates a like by post id route", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .post(`/like/post/${createdPostId}`)
+            .post(`/api/like/post/${createdPostId}`)
             .set("Authorization", `Bearer ${otherAuthToken}`)
             .send({
             postID: new mongoose_1.default.Types.ObjectId().toString(),
@@ -115,13 +116,13 @@ describe("Likes CRUD API", () => {
             senderID: userId,
         });
         createdNoLikesPostId = createdOtherPost._id.toString();
-        const response = yield (0, supertest_1.default)(app).get(`/like/post/${createdOtherPost._id.toString()}`);
+        const response = yield (0, supertest_1.default)(app).get(`/api/like/post/${createdOtherPost._id.toString()}`);
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
         expect(response.body.length).toBe(0);
     }));
     test("gets all likes for a specific post", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).get(`/like/post/${createdPostId}`);
+        const response = yield (0, supertest_1.default)(app).get(`/api/like/post/${createdPostId}`);
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
         expect(response.body.length).toBeGreaterThan(0);
@@ -132,61 +133,29 @@ describe("Likes CRUD API", () => {
     }));
     test("create sets senderID from token when missing in payload", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .post("/like")
+            .post(`/api/like/post/${createdPostId}`)
             .set("Authorization", `Bearer ${otherAuthToken}`)
             .send({
-            postID: createdPostId,
+            senderID: userId,
         });
         expect(response.status).toBe(201);
         expect(response.body.senderID).toBe(otherUserId);
         expect(response.body).toHaveProperty("date");
         createdAutoSenderLikeId = response.body._id;
     }));
-    test("update requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .put(`/like/${createdLikeId}`)
-            .send({ postID: createdPostId });
+    test("delete by post id requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app).delete(`/api/like/post/${createdPostId}`);
         expect(response.status).toBe(401);
     }));
-    test("update returns 404 when like is missing", () => __awaiter(void 0, void 0, void 0, function* () {
-        const missingId = new mongoose_1.default.Types.ObjectId().toString();
+    test("delete by post id succeeds for creator", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .put(`/like/${missingId}`)
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({ postID: createdPostId });
-        expect(response.status).toBe(404);
-    }));
-    test("update rejects senderID change", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .put(`/like/${createdLikeId}`)
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({ senderID: otherUserId });
-        expect(response.status).toBe(400);
-    }));
-    test("delete returns 404 when like is missing", () => __awaiter(void 0, void 0, void 0, function* () {
-        const missingId = new mongoose_1.default.Types.ObjectId().toString();
-        const response = yield (0, supertest_1.default)(app)
-            .delete(`/like/${missingId}`)
-            .set("Authorization", `Bearer ${authToken}`);
-        expect(response.status).toBe(404);
-    }));
-    test("delete succeeds for creator", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .delete(`/like/${createdLikeId}`)
+            .delete(`/api/like/post/${createdPostId}`)
             .set("Authorization", `Bearer ${authToken}`);
         expect(response.status).toBe(200);
     }));
-    test("delete requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).delete(`/like/${createdLikeId}`);
-        expect(response.status).toBe(401);
-    }));
-    test("delete by post id requires authentication", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).delete(`/like/post/${createdPostId}`);
-        expect(response.status).toBe(401);
-    }));
     test("delete by post id returns 404 when like for user is missing", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .delete(`/like/post/${createdPostId}`)
+            .delete(`/api/like/post/${createdPostId}`)
             .set("Authorization", `Bearer ${authToken}`);
         expect(response.status).toBe(404);
     }));

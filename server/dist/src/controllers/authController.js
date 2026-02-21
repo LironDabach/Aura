@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const usersModel_1 = __importDefault(require("../models/usersModel"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const google_auth_library_1 = require("google-auth-library");
 const sendError = (code, message, res) => {
     res.status(code).json({ message });
 };
@@ -39,6 +40,10 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const password = req.body.password;
     if (!username || !email || !password) {
         return sendError(400, "Username, email and password are required", res);
+    }
+    // Allow common username characters while still rejecting spaces/special symbols.
+    if (!/^[a-zA-Z0-9._-]+$/.test(username)) {
+        return sendError(400, "Username can only contain English letters, numbers, dots, underscores, and hyphens", res);
     }
     try {
         const salt = yield bcrypt_1.default.genSalt(10);
@@ -67,6 +72,10 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield usersModel_1.default.findOne({ username: username });
         if (!user) {
             return sendError(401, "Invalid username or password", res);
+        }
+        // Check if user has a password (Google users might not have one)
+        if (!user.password) {
+            return sendError(401, "Please use Google to sign in", res);
         }
         const isMatch = yield bcrypt_1.default.compare(password, user.password);
         if (!isMatch) {
@@ -128,10 +137,78 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return sendError(401, "Invalid refresh token", res);
     }
 });
+const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { credential } = req.body;
+    if (!credential) {
+        return sendError(400, "Google credential is required", res);
+    }
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+        console.error("GOOGLE_CLIENT_ID is not set");
+        return sendError(500, "Google authentication not configured", res);
+    }
+    try {
+        const client = new google_auth_library_1.OAuth2Client(googleClientId);
+        const ticket = yield client.verifyIdToken({
+            idToken: credential,
+            audience: googleClientId,
+        });
+        const payload = ticket.getPayload();
+        if (!payload) {
+            return sendError(401, "Invalid Google token", res);
+        }
+        const { sub: googleId, email, name, picture } = payload;
+        if (!email) {
+            return sendError(400, "Email not provided by Google", res);
+        }
+        // Find existing user by googleId or email
+        let user = yield usersModel_1.default.findOne({ $or: [{ googleId }, { email }] });
+        if (user) {
+            // Update googleId if user exists but doesn't have it (registered with email before)
+            if (!user.googleId) {
+                user.googleId = googleId;
+                if (picture)
+                    user.profilePicture = picture;
+                yield user.save();
+            }
+        }
+        else {
+            // Create new user
+            const username = (name === null || name === void 0 ? void 0 : name.replace(/\s+/g, "").toLowerCase()) || email.split("@")[0];
+            // Ensure unique username
+            let uniqueUsername = username;
+            let counter = 1;
+            while (yield usersModel_1.default.findOne({ username: uniqueUsername })) {
+                uniqueUsername = `${username}${counter}`;
+                counter++;
+            }
+            user = yield usersModel_1.default.create({
+                username: uniqueUsername,
+                email,
+                googleId,
+                profilePicture: picture,
+            });
+        }
+        const tokens = generateToken(user._id.toString());
+        user.refreshTokens.push(tokens.refreshToken);
+        yield user.save();
+        res.status(200).json(Object.assign(Object.assign({}, tokens), { user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                profilePicture: user.profilePicture,
+            } }));
+    }
+    catch (err) {
+        console.error("Google login error:", err);
+        return sendError(401, "Google authentication failed", res);
+    }
+});
 exports.default = {
     register,
     login,
     logout,
     refreshToken,
+    googleLogin,
 };
 //# sourceMappingURL=authController.js.map
