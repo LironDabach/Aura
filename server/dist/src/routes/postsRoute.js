@@ -195,6 +195,10 @@ router.put("/:id", authMiddleware_1.authenticate, postsController_1.default.upda
  *     responses:
  *       200:
  *         description: Post deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
  *       401:
  *         description: Unauthorized
  *       403:

@@ -18,6 +18,10 @@ const postSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  imageUrl: {
+    type: String,
+    required: true,
+  },
 });
 
 export default mongoose.model("post", postSchema);

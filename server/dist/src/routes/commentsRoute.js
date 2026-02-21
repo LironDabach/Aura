@@ -55,13 +55,7 @@ router.get("/post/:postId", commentsController_1.default.getByPostId.bind(commen
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *                 example: "Great post!"
- *             required:
- *               - content
+ *             $ref: '#/components/schemas/CommentCreate'
  *     responses:
  *       201:
  *         description: Comment created
@@ -147,6 +141,10 @@ router.put("/post/:postId/:commentId", authMiddleware_1.authenticate, commentsCo
  *     responses:
  *       200:
  *         description: Comment deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
  *       401:
  *         description: Unauthorized
  *       403:

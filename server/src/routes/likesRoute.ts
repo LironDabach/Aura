@@ -82,6 +82,10 @@ router.post("/post/:postID", authenticate, likesController.createByPostId.bind(l
  *     responses:
  *       200:
  *         description: Like removed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Like'
  *       401:
  *         description: Unauthorized
  *       404:
