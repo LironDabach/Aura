@@ -4,18 +4,19 @@ import postsRoute from "./routes/postsRoute";
 import commentsRoute from "./routes/commentsRoute";
 import likesRoute from "./routes/likesRoute";
 import authRoute from "./routes/authRoute";
-import dotenv from "dotenv";
 import { setupSwagger } from "./swagger";
 import path from "path";
-import cors from "cors";
-
-
-dotenv.config({ path: "../.env.development" });
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 setupSwagger(app);
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "*");
+  res.header("Access-Control-Allow-Headers", "*");
+  next();
+});
 
 // // API routes
 app.use("/api/post", postsRoute);
@@ -39,16 +40,27 @@ const initApp = () => {
       reject("DATABASE_URL is undefined");
       return;
     }
+    const mongoTimeoutMs = Number(process.env.MONGO_CONNECT_TIMEOUT_MS || "5000");
     mongoose
-      .connect(dbUrl, {})
+      .connect(dbUrl, {
+        connectTimeoutMS: mongoTimeoutMs,
+        serverSelectionTimeoutMS: mongoTimeoutMs,
+      })
       .then(() => {
         resolve(app);
       })
       .catch((error) => {
-        reject(error);
+        reject(
+          new Error(
+            `Failed to connect to MongoDB within ${mongoTimeoutMs}ms. ` +
+              `Check DATABASE_URL and that MongoDB is reachable. ` +
+              `Original error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
       });
+
     const db = mongoose.connection;
-    db.on("error", (error) => console.error(error));
+    db.on("error", (error) => console.error("Mongo connection error:", error));
     db.once("open", () => console.log("Connected to Database"));
   });
   return pr;

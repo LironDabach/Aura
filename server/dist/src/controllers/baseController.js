@@ -15,7 +15,6 @@ class BaseController {
     }
     getAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield new Promise((resolve) => setTimeout(() => resolve(), 200));
             try {
                 if (req.query) {
                     const filterData = yield this.model.find(req.query);

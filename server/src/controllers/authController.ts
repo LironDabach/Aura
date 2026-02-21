@@ -42,9 +42,13 @@ const register = async (req: Request, res: Response) => {
     return sendError(400, "Username, email and password are required", res);
   }
 
-  // Validate username: only English letters and numbers, no spaces
-  if (!/^[a-zA-Z0-9]+$/.test(username)) {
-    return sendError(400, "Username can only contain English letters and numbers", res);
+  // Allow common username characters while still rejecting spaces/special symbols.
+  if (!/^[a-zA-Z0-9._-]+$/.test(username)) {
+    return sendError(
+      400,
+      "Username can only contain English letters, numbers, dots, underscores, and hyphens",
+      res,
+    );
   }
 
   try {

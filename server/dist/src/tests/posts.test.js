@@ -40,7 +40,7 @@ describe("Posts CRUD API", () => {
     test("creates a post", () => __awaiter(void 0, void 0, void 0, function* () {
         const beforeCreate = Date.now();
         const response = yield (0, supertest_1.default)(app)
-            .post("/post")
+            .post("/api/post")
             .set("Authorization", `Bearer ${authToken}`)
             .send({
             title: "First post",
@@ -58,7 +58,7 @@ describe("Posts CRUD API", () => {
     }));
     test("create uses authenticated user id over body senderID", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .post("/post")
+            .post("/api/post")
             .set("Authorization", `Bearer ${otherAuthToken}`)
             .send({
             title: "Other post",
@@ -71,18 +71,22 @@ describe("Posts CRUD API", () => {
         createdOtherPostId = response.body._id;
     }));
     test("gets all posts", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).get("/post");
+        const response = yield (0, supertest_1.default)(app).get("/api/post");
         expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
-        expect(response.body.length).toBeGreaterThan(0);
+        expect(response.body).toHaveProperty("posts");
+        expect(response.body).toHaveProperty("page");
+        expect(response.body).toHaveProperty("totalPages");
+        expect(response.body).toHaveProperty("total");
+        expect(Array.isArray(response.body.posts)).toBe(true);
+        expect(response.body.posts.length).toBeGreaterThan(0);
     }));
     test("gets a post by id", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).get(`/post/${createdPostId}`);
+        const response = yield (0, supertest_1.default)(app).get(`/api/post/${createdPostId}`);
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty("_id", createdPostId);
     }));
     test("gets posts by user id", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).get(`/post/user/${userId}`);
+        const response = yield (0, supertest_1.default)(app).get(`/api/post/user/${userId}`);
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
         expect(response.body.length).toBeGreaterThan(0);
@@ -92,14 +96,14 @@ describe("Posts CRUD API", () => {
     }));
     test("gets posts by user id returns empty array for user without posts", () => __awaiter(void 0, void 0, void 0, function* () {
         const noPostsUserId = new mongoose_1.default.Types.ObjectId().toString();
-        const response = yield (0, supertest_1.default)(app).get(`/post/user/${noPostsUserId}`);
+        const response = yield (0, supertest_1.default)(app).get(`/api/post/user/${noPostsUserId}`);
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
         expect(response.body).toHaveLength(0);
     }));
     test("updates a post", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .put(`/post/${createdPostId}`)
+            .put(`/api/post/${createdPostId}`)
             .set("Authorization", `Bearer ${authToken}`)
             .send({
             title: "Updated post",
@@ -111,28 +115,28 @@ describe("Posts CRUD API", () => {
     test("update returns 404 when post is missing", () => __awaiter(void 0, void 0, void 0, function* () {
         const missingId = new mongoose_1.default.Types.ObjectId().toString();
         const response = yield (0, supertest_1.default)(app)
-            .put(`/post/${missingId}`)
+            .put(`/api/post/${missingId}`)
             .set("Authorization", `Bearer ${authToken}`)
             .send({ title: "Nope" });
         expect(response.status).toBe(404);
     }));
     test("update rejects changing the creator", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .put(`/post/${createdPostId}`)
+            .put(`/api/post/${createdPostId}`)
             .set("Authorization", `Bearer ${authToken}`)
             .send({ senderID: otherUserId, title: "Attempt change" });
         expect(response.status).toBe(400);
     }));
     test("update rejects changing the post date", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .put(`/post/${createdPostId}`)
+            .put(`/api/post/${createdPostId}`)
             .set("Authorization", `Bearer ${authToken}`)
             .send({ date: "2030-01-01T00:00:00.000Z", title: "Attempt date change" });
         expect(response.status).toBe(400);
     }));
     test("update is forbidden when not creator", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .put(`/post/${createdPostId}`)
+            .put(`/api/post/${createdPostId}`)
             .set("Authorization", `Bearer ${otherAuthToken}`)
             .send({ title: "Should fail" });
         expect(response.status).toBe(403);
@@ -143,7 +147,7 @@ describe("Posts CRUD API", () => {
             .mockRejectedValueOnce(new Error("db"));
         const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
         const response = yield (0, supertest_1.default)(app)
-            .put(`/post/${createdPostId}`)
+            .put(`/api/post/${createdPostId}`)
             .set("Authorization", `Bearer ${authToken}`)
             .send({ title: "Trigger error" });
         expect(response.status).toBe(500);
@@ -152,23 +156,23 @@ describe("Posts CRUD API", () => {
     }));
     test("delete is forbidden when not creator", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .delete(`/post/${createdPostId}`)
+            .delete(`/api/post/${createdPostId}`)
             .set("Authorization", `Bearer ${otherAuthToken}`);
         expect(response.status).toBe(403);
     }));
     test("delete returns 404 when post is missing", () => __awaiter(void 0, void 0, void 0, function* () {
         const missingId = new mongoose_1.default.Types.ObjectId().toString();
         const response = yield (0, supertest_1.default)(app)
-            .delete(`/post/${missingId}`)
+            .delete(`/api/post/${missingId}`)
             .set("Authorization", `Bearer ${authToken}`);
         expect(response.status).toBe(404);
     }));
     test("deletes a post", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app)
-            .delete(`/post/${createdPostId}`)
+            .delete(`/api/post/${createdPostId}`)
             .set("Authorization", `Bearer ${authToken}`);
         expect(response.status).toBe(200);
-        const check = yield (0, supertest_1.default)(app).get(`/post/${createdPostId}`);
+        const check = yield (0, supertest_1.default)(app).get(`/api/post/${createdPostId}`);
         expect(check.status).toBe(404);
     }));
 });

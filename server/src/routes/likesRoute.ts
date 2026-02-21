@@ -91,5 +91,4 @@ router.post("/post/:postID", authenticate, likesController.createByPostId.bind(l
  */
 router.delete("/post/:postID", authenticate, likesController.delByPostId.bind(likesController));
 
-
 export default router;

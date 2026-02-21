@@ -9,24 +9,28 @@ const postsRoute_1 = __importDefault(require("./routes/postsRoute"));
 const commentsRoute_1 = __importDefault(require("./routes/commentsRoute"));
 const likesRoute_1 = __importDefault(require("./routes/likesRoute"));
 const authRoute_1 = __importDefault(require("./routes/authRoute"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const swagger_1 = require("./swagger");
 const path_1 = __importDefault(require("path"));
-dotenv_1.default.config({ path: ".env.dev" });
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 (0, swagger_1.setupSwagger)(app);
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "*");
+    res.header("Access-Control-Allow-Headers", "*");
+    next();
+});
 // // API routes
-app.use("/post", postsRoute_1.default);
-app.use("/comment", commentsRoute_1.default);
-app.use("/like", likesRoute_1.default);
-app.use("/auth", authRoute_1.default);
+app.use("/api/post", postsRoute_1.default);
+app.use("/api/comment", commentsRoute_1.default);
+app.use("/api/like", likesRoute_1.default);
+app.use("/api/auth", authRoute_1.default);
 // Serve React static files from dist
-const distPath = path_1.default.join(__dirname, "../client/dist");
+const distPath = path_1.default.resolve(process.cwd(), "../client/dist");
 app.use(express_1.default.static(distPath));
-// SPA fallback: route all unmatched requests to index.html (for React Router)
-app.get(/.*/, (req, res) => {
-    res.sendFile(path_1.default.join(distPath, "index.html"));
+// 404 handler for all unmatched routes
+app.use((req, res) => {
+    res.status(404).json({ error: "Not Found" });
 });
 const initApp = () => {
     const pr = new Promise((resolve, reject) => {
@@ -35,16 +39,22 @@ const initApp = () => {
             reject("DATABASE_URL is undefined");
             return;
         }
+        const mongoTimeoutMs = Number(process.env.MONGO_CONNECT_TIMEOUT_MS || "5000");
         mongoose_1.default
-            .connect(dbUrl, {})
+            .connect(dbUrl, {
+            connectTimeoutMS: mongoTimeoutMs,
+            serverSelectionTimeoutMS: mongoTimeoutMs,
+        })
             .then(() => {
             resolve(app);
         })
             .catch((error) => {
-            reject(error);
+            reject(new Error(`Failed to connect to MongoDB within ${mongoTimeoutMs}ms. ` +
+                `Check DATABASE_URL and that MongoDB is reachable. ` +
+                `Original error: ${error instanceof Error ? error.message : String(error)}`));
         });
         const db = mongoose_1.default.connection;
-        db.on("error", (error) => console.error(error));
+        db.on("error", (error) => console.error("Mongo connection error:", error));
         db.once("open", () => console.log("Connected to Database"));
     });
     return pr;
