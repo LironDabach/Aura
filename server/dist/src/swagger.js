@@ -152,7 +152,12 @@ const buildSwaggerSpec = () => {
                                 format: "date-time",
                                 example: "2026-02-18T10:00:00.000Z",
                             },
+                            imageUrl: {
+                                type: "string",
+                                example: "https://images.example.com/posts/project-update.jpg",
+                            },
                         },
+                        required: ["_id", "title", "body", "senderID", "date", "imageUrl"],
                     },
                     PostCreate: {
                         type: "object",
@@ -162,14 +167,22 @@ const buildSwaggerSpec = () => {
                                 type: "string",
                                 example: "Shiran Levi reviewed the post routes.",
                             },
+                            imageUrl: {
+                                type: "string",
+                                example: "https://images.example.com/posts/api-notes.jpg",
+                            },
                         },
-                        required: ["title", "body"],
+                        required: ["title", "body", "imageUrl"],
                     },
                     PostUpdate: {
                         type: "object",
                         properties: {
                             title: { type: "string", example: "Shiran Levi: Updated Title" },
                             body: { type: "string", example: "Liron Dabach updated body." },
+                            imageUrl: {
+                                type: "string",
+                                example: "https://images.example.com/posts/updated-cover.jpg",
+                            },
                         },
                     },
                     Like: {

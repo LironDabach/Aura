@@ -37,6 +37,7 @@ describe("Posts CRUD API", () => {
         title: "First post",
         body: "Hello from tests",
         senderID: userId,
+        imageUrl: "https://example.com/post-1.png",
         date: "2000-01-01T00:00:00.000Z",
       });
 
@@ -59,6 +60,7 @@ describe("Posts CRUD API", () => {
         title: "Other post",
         body: "Other body",
         senderID: userId,
+        imageUrl: "https://example.com/post-2.png",
       });
 
     expect(response.status).toBe(201);
