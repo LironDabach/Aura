@@ -26,11 +26,18 @@ const PostCard: React.FC<PostCardProps> = ({
   const username = sender?.username ?? "unknown";
   const avatar = sender?.profilePicture;
 
-  const formattedDate = new Date(post.date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const postDate = new Date(post.date);
+  const formattedDate =
+    postDate.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }) +
+    " · " +
+    postDate.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   const handleLike = async () => {
     setAnimating(true);

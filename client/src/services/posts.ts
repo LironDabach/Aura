@@ -59,3 +59,19 @@ export const addComment = async (postId: string, content: string): Promise<Comme
   const res = await api.post(`/api/comment/post/${postId}`, { content });
   return res.data;
 };
+
+export const updateComment = async (
+  postId: string,
+  commentId: string,
+  content: string
+): Promise<Comment> => {
+  const res = await api.put(`/api/comment/post/${postId}/${commentId}`, { content });
+  return res.data;
+};
+
+export const deleteComment = async (
+  postId: string,
+  commentId: string
+): Promise<void> => {
+  await api.delete(`/api/comment/post/${postId}/${commentId}`);
+};

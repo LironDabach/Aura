@@ -118,7 +118,10 @@ class PostsController extends baseController {
   async getByUserId(req: Request, res: Response) {
     const userId = req.params.userId;
     try {
-      const posts = await this.model.find({ senderID: userId });
+      const posts = await this.model
+        .find({ senderID: userId })
+        .populate("senderID", "username profilePicture")
+        .sort({ date: -1 });
       res.json(posts);
     } catch (err) {
       console.error(err);
