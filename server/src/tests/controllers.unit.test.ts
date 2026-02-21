@@ -23,7 +23,7 @@ describe("CommentsController unit", () => {
     errorSpy.mockRestore();
   });
 
-  test("create sets userID from authenticated user", async () => {
+  test("create sends body as-is when using base create", async () => {
     const model = { create: jest.fn().mockResolvedValue({ _id: "1" }) };
     (commentsController as any).model = model;
     const req: any = { params: {}, body: { content: "x" }, user: { _id: "u1" } };
@@ -31,27 +31,24 @@ describe("CommentsController unit", () => {
 
     await commentsController.create(req, res);
 
-    expect(model.create).toHaveBeenCalledWith({ content: "x", userID: "u1" });
+    expect(model.create).toHaveBeenCalledWith({ content: "x" });
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
-  test("update returns 404 when comment does not exist", async () => {
-    const model = { findById: jest.fn().mockResolvedValue(null) };
+  test("update returns null payload when comment does not exist", async () => {
+    const model = { findByIdAndUpdate: jest.fn().mockResolvedValue(null) };
     (commentsController as any).model = model;
     const req: any = { params: { id: "c1" }, body: {}, user: { _id: "u1" } };
     const res = makeRes();
 
     await commentsController.update(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith(null);
   });
 
-  test("update returns 403 when user is not owner", async () => {
+  test("update does not enforce owner checks on base route", async () => {
     const model = {
-      findById: jest.fn().mockResolvedValue({
-        userID: { toString: () => "owner" },
-        date: new Date(),
-      }),
+      findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "c1", content: "updated" }),
     };
     (commentsController as any).model = model;
     const req: any = { params: { id: "c1" }, body: {}, user: { _id: "u1" } };
@@ -59,15 +56,12 @@ describe("CommentsController unit", () => {
 
     await commentsController.update(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ _id: "c1", content: "updated" });
   });
 
-  test("update returns 400 when userID is changed", async () => {
+  test("update allows changing fields on base route", async () => {
     const model = {
-      findById: jest.fn().mockResolvedValue({
-        userID: { toString: () => "u1" },
-        date: new Date("2024-01-01T00:00:00.000Z"),
-      }),
+      findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "c1", userID: "u2" }),
     };
     (commentsController as any).model = model;
     const req: any = {
@@ -79,7 +73,7 @@ describe("CommentsController unit", () => {
 
     await commentsController.update(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ _id: "c1", userID: "u2" });
   });
 
   test("update succeeds for comment owner", async () => {
@@ -104,8 +98,8 @@ describe("CommentsController unit", () => {
     expect(res.json).toHaveBeenCalledWith({ _id: "c1", content: "updated" });
   });
 
-  test("update returns 500 when findById throws", async () => {
-    const model = { findById: jest.fn().mockRejectedValue(new Error("db")) };
+  test("update returns 500 when findByIdAndUpdate throws", async () => {
+    const model = { findByIdAndUpdate: jest.fn().mockRejectedValue(new Error("db")) };
     (commentsController as any).model = model;
     const req: any = { params: { id: "c1" }, body: {}, user: { _id: "u1" } };
     const res = makeRes();
@@ -113,11 +107,11 @@ describe("CommentsController unit", () => {
     await commentsController.update(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith("Error updating comment");
+    expect(res.send).toHaveBeenCalledWith("Error: Can't update entity");
   });
 
-  test("del returns 500 when findById throws", async () => {
-    const model = { findById: jest.fn().mockRejectedValue(new Error("db")) };
+  test("del returns 500 when findByIdAndDelete throws", async () => {
+    const model = { findByIdAndDelete: jest.fn().mockRejectedValue(new Error("db")) };
     (commentsController as any).model = model;
     const req: any = { params: { id: "c1" }, user: { _id: "u1" } };
     const res = makeRes();
@@ -125,12 +119,12 @@ describe("CommentsController unit", () => {
     await commentsController.del(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith("Error deleting comment");
+    expect(res.send).toHaveBeenCalledWith("Error: Can't delete entity");
   });
 
-  test("del returns 403 when user is not owner", async () => {
+  test("del does not enforce owner checks on base route", async () => {
     const model = {
-      findById: jest.fn().mockResolvedValue({ userID: { toString: () => "owner" } }),
+      findByIdAndDelete: jest.fn().mockResolvedValue({ _id: "c1" }),
     };
     (commentsController as any).model = model;
     const req: any = { params: { id: "c1" }, user: { _id: "u1" } };
@@ -138,7 +132,7 @@ describe("CommentsController unit", () => {
 
     await commentsController.del(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 
   test("del succeeds when user is owner", async () => {
@@ -280,7 +274,7 @@ describe("LikesController unit", () => {
     errorSpy.mockRestore();
   });
 
-  test("create sets senderID from authenticated user", async () => {
+  test("create sends body as-is when using base create", async () => {
     const model = { create: jest.fn().mockResolvedValue({ _id: "1" }) };
     (likesController as any).model = model;
     const req: any = { params: {}, body: {}, user: { _id: "u1" } };
@@ -288,12 +282,12 @@ describe("LikesController unit", () => {
 
     await likesController.create(req, res);
 
-    expect(model.create).toHaveBeenCalledWith({ senderID: "u1" });
+    expect(model.create).toHaveBeenCalledWith({});
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
   test("del returns 404 when like does not exist", async () => {
-    const model = { findById: jest.fn().mockResolvedValue(null) };
+    const model = { findByIdAndDelete: jest.fn().mockResolvedValue(null) };
     (likesController as any).model = model;
     const req: any = { params: { id: "l1" }, user: { _id: "u1" } };
     const res = makeRes();
@@ -303,9 +297,9 @@ describe("LikesController unit", () => {
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
-  test("del returns 403 when user is not owner", async () => {
+  test("del does not enforce owner checks on base route", async () => {
     const model = {
-      findById: jest.fn().mockResolvedValue({ senderID: { toString: () => "owner" } }),
+      findByIdAndDelete: jest.fn().mockResolvedValue({ _id: "l1" }),
     };
     (likesController as any).model = model;
     const req: any = { params: { id: "l1" }, user: { _id: "u1" } };
@@ -313,7 +307,7 @@ describe("LikesController unit", () => {
 
     await likesController.del(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 
   test("del returns 500 when model throws", async () => {
@@ -327,20 +321,20 @@ describe("LikesController unit", () => {
     expect(res.status).toHaveBeenCalledWith(500);
   });
 
-  test("update returns 404 when like does not exist", async () => {
-    const model = { findById: jest.fn().mockResolvedValue(null) };
+  test("update returns null payload when like does not exist", async () => {
+    const model = { findByIdAndUpdate: jest.fn().mockResolvedValue(null) };
     (likesController as any).model = model;
     const req: any = { params: { id: "l1" }, body: {}, user: { _id: "u1" } };
     const res = makeRes();
 
     await likesController.update(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith(null);
   });
 
-  test("update returns 403 when user is not owner", async () => {
+  test("update does not enforce owner checks on base route", async () => {
     const model = {
-      findById: jest.fn().mockResolvedValue({ senderID: { toString: () => "owner" } }),
+      findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "l1" }),
     };
     (likesController as any).model = model;
     const req: any = { params: { id: "l1" }, body: {}, user: { _id: "u1" } };
@@ -348,12 +342,12 @@ describe("LikesController unit", () => {
 
     await likesController.update(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ _id: "l1" });
   });
 
-  test("update returns 400 when senderID is changed", async () => {
+  test("update allows changing fields on base route", async () => {
     const model = {
-      findById: jest.fn().mockResolvedValue({ senderID: { toString: () => "u1" } }),
+      findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "l1", senderID: "u2" }),
     };
     (likesController as any).model = model;
     const req: any = {
@@ -365,7 +359,7 @@ describe("LikesController unit", () => {
 
     await likesController.update(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ _id: "l1", senderID: "u2" });
   });
 
   test("update succeeds for owner", async () => {

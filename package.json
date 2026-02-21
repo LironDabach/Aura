@@ -1,0 +1,13 @@
+{
+  "name": "aura-workspace",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "test": "npm run test -w server",
+    "test:server": "npm run test -w server",
+    "test:client": "npm run test -w client"
+  }
+}

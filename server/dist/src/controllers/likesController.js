@@ -18,80 +18,6 @@ class LikesController extends baseController_1.default {
     constructor() {
         super(likesModel_1.default);
     }
-    // Override create method to associate like with authenticated user
-    create(req, res) {
-        const _super = Object.create(null, {
-            create: { get: () => super.create }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            if (req.user) {
-                req.body.senderID = req.user._id; // Associate like with user ID from token
-            }
-            return _super.create.call(this, req, res);
-        });
-    }
-    // Override DELETE to ensure only creator can delete
-    del(req, res) {
-        const _super = Object.create(null, {
-            del: { get: () => super.del }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            const id = req.params.id;
-            try {
-                const like = yield this.model.findById(id);
-                if (!like) {
-                    res.status(404).send("Like not found");
-                    return;
-                }
-                // // Check if the authenticated user is the creator of the like
-                if (req.user && like.senderID.toString() === req.user._id) {
-                    _super.del.call(this, req, res);
-                    return;
-                }
-                else {
-                    res.status(403).send("Forbidden: You are not the creator of this like");
-                    return;
-                }
-            }
-            catch (err) {
-                console.error(err);
-                res.status(500).send("Error deleting like");
-            }
-        });
-    }
-    // Override update to prevent changing userId and ensure ownership
-    update(req, res) {
-        const _super = Object.create(null, {
-            update: { get: () => super.update }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            const id = req.params.id;
-            try {
-                const like = yield this.model.findById(id);
-                if (!like) {
-                    res.status(404).send("Like not found");
-                    return;
-                }
-                // Check if the authenticated user is the creator of the like
-                if (!req.user || like.senderID.toString() !== req.user._id) {
-                    res.status(403).send("Forbidden: You are not the creator of this like");
-                    return;
-                }
-                // Prevent changing userId field
-                if (req.body.senderID &&
-                    req.body.senderID !== like.senderID.toString()) {
-                    res.status(400).send("Cannot change creator of the like");
-                    return;
-                }
-                _super.update.call(this, req, res);
-                return;
-            }
-            catch (err) {
-                console.error(err);
-                res.status(500).send("Error updating comment");
-            }
-        });
-    }
     // Get all likes for a specific post
     getByPostId(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -113,6 +39,8 @@ class LikesController extends baseController_1.default {
         });
         return __awaiter(this, void 0, void 0, function* () {
             const postID = req.params.postID;
+            if (!req.body)
+                req.body = {};
             if (req.user) {
                 req.body.senderID = req.user._id; // Associate like with user ID from token
             }

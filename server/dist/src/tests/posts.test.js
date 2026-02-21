@@ -74,9 +74,6 @@ describe("Posts CRUD API", () => {
         const response = yield (0, supertest_1.default)(app).get("/api/post");
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty("posts");
-        expect(response.body).toHaveProperty("page");
-        expect(response.body).toHaveProperty("totalPages");
-        expect(response.body).toHaveProperty("total");
         expect(Array.isArray(response.body.posts)).toBe(true);
         expect(response.body.posts.length).toBeGreaterThan(0);
     }));

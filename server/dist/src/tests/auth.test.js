@@ -29,9 +29,8 @@ afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
     yield mongoose_1.default.connection.close();
 }));
 describe("Auth API", () => {
-    const runId = Date.now().toString();
-    const username = `shiranlevi${runId}`;
-    const email = `liron.dabach3+${runId}@gmail.com`;
+    const username = "shiranlevi";
+    const email = "liron.dabach3@gmail.com";
     const password = "StrongPass123!";
     let registerRefreshToken;
     let loginRefreshToken;
@@ -70,21 +69,23 @@ describe("Auth API", () => {
         }));
         const errorSpy = jest.spyOn(console, "error").mockImplementation(() => { });
         delete process.env.JWT_SECRET;
-        const response = yield (0, supertest_1.default)(app)
-            .post("/api/auth/register")
-            .send({
-            username: `${username}nosecret`,
-            email: `nosecret.${runId}@example.com`,
-            password,
-        });
-        expect(response.status).toBe(500);
-        expect(errorSpy).toHaveBeenCalled();
-        expect(exitSpy).toHaveBeenCalled();
-        if (originalSecret !== undefined) {
-            process.env.JWT_SECRET = originalSecret;
+        try {
+            const response = yield (0, supertest_1.default)(app).post("/api/auth/register").send({
+                username: `${username}nosecret`,
+                email: `nosecret${email}`,
+                password,
+            });
+            expect(response.status).toBe(500);
+            expect(errorSpy).toHaveBeenCalled();
+            expect(exitSpy).toHaveBeenCalled();
         }
-        exitSpy.mockRestore();
-        errorSpy.mockRestore();
+        finally {
+            if (originalSecret !== undefined) {
+                process.env.JWT_SECRET = originalSecret;
+            }
+            exitSpy.mockRestore();
+            errorSpy.mockRestore();
+        }
     }));
     test("login requires username and password", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).post("/api/auth/login").send({
@@ -94,10 +95,8 @@ describe("Auth API", () => {
         expect(response.body).toHaveProperty("message");
     }));
     test("login fails when user is not found", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app)
-            .post("/api/auth/login")
-            .send({
-            username: `${username}missing`,
+        const response = yield (0, supertest_1.default)(app).post("/api/auth/login").send({
+            username: `${username}_missing`,
             password,
         });
         expect(response.status).toBe(401);

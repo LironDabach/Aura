@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "echo \"No client tests configured\"",
     "lint": "eslint .",
     "preview": "vite preview"
   },
