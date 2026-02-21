@@ -197,6 +197,10 @@ router.put("/:id", authenticate, postsController.update.bind(postsController));
  *     responses:
  *       200:
  *         description: Post deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
  *       401:
  *         description: Unauthorized
  *       403:

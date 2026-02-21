@@ -83,6 +83,10 @@ router.post("/post/:postID", authMiddleware_1.authenticate, likesController_1.de
  *     responses:
  *       200:
  *         description: Like removed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Like'
  *       401:
  *         description: Unauthorized
  *       404:

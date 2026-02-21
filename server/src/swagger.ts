@@ -20,7 +20,7 @@ const buildSwaggerSpec = () => {
         title: "Advanced Web Applications REST API",
         version: "1.0.0",
         description:
-          "REST API documentation for posts, comments, and authentication.",
+          "REST API documentation for posts, comments, likes, and authentication.",
       },
       servers: [
         {
@@ -64,11 +64,12 @@ const buildSwaggerSpec = () => {
           RegisterRequest: {
             type: "object",
             properties: {
-              username: { 
-                type: "string", 
+              username: {
+                type: "string",
                 example: "shiranLevi",
-                pattern: "^[a-zA-Z0-9]+$",
-                description: "Only English letters and numbers (no spaces or special characters)"
+                pattern: "^[a-zA-Z0-9._-]+$",
+                description:
+                  "Only English letters, numbers, dots, underscores, and hyphens",
               },
               email: { type: "string", example: "shiran.levi@example.com" },
               password: { type: "string", example: "ShiranLevi123!" },
@@ -121,6 +122,17 @@ const buildSwaggerSpec = () => {
             },
             required: ["token", "refreshToken", "user"],
           },
+          UserPreview: {
+            type: "object",
+            properties: {
+              _id: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b8" },
+              username: { type: "string", example: "johndoe" },
+              profilePicture: {
+                type: "string",
+                example: "https://lh3.googleusercontent.com/...",
+              },
+            },
+          },
           Post: {
             type: "object",
             properties: {
@@ -130,8 +142,23 @@ const buildSwaggerSpec = () => {
                 type: "string",
                 example: "Shiran Levi and Liron Dabach shipped Swagger docs.",
               },
-              senderID: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b8" },
+              senderID: {
+                oneOf: [
+                  { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b8" },
+                  { $ref: "#/components/schemas/UserPreview" },
+                ],
+              },
+              date: {
+                type: "string",
+                format: "date-time",
+                example: "2026-02-18T10:00:00.000Z",
+              },
+              imageUrl: {
+                type: "string",
+                example: "https://images.example.com/posts/project-update.jpg",
+              },
             },
+            required: ["_id", "title", "body", "senderID", "date", "imageUrl"],
           },
           PostCreate: {
             type: "object",
@@ -141,14 +168,22 @@ const buildSwaggerSpec = () => {
                 type: "string",
                 example: "Shiran Levi reviewed the post routes.",
               },
+              imageUrl: {
+                type: "string",
+                example: "https://images.example.com/posts/api-notes.jpg",
+              },
             },
-            required: ["title", "body"],
+            required: ["title", "body", "imageUrl"],
           },
           PostUpdate: {
             type: "object",
             properties: {
               title: { type: "string", example: "Shiran Levi: Updated Title" },
               body: { type: "string", example: "Liron Dabach updated body." },
+              imageUrl: {
+                type: "string",
+                example: "https://images.example.com/posts/updated-cover.jpg",
+              },
             },
           },
           Like: {
@@ -165,17 +200,26 @@ const buildSwaggerSpec = () => {
             properties: {
               _id: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b9" },
               postID: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b7" },
-              userID: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b8" },
+              userID: {
+                oneOf: [
+                  { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b8" },
+                  { $ref: "#/components/schemas/UserPreview" },
+                ],
+              },
               content: { type: "string", example: "Nice work, Shiran and Liron!" },
+              date: {
+                type: "string",
+                format: "date-time",
+                example: "2026-02-18T10:00:00.000Z",
+              },
             },
           },
           CommentCreate: {
             type: "object",
             properties: {
-              postID: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b7" },
               content: { type: "string", example: "Great job, Shiran Levi!" },
             },
-            required: ["postID", "content"],
+            required: ["content"],
           },
           CommentUpdate: {
             type: "object",

@@ -4,7 +4,7 @@ import authController from "../controllers/authController";
 const router = express.Router();
 /**
  * @openapi
- * /auth/register:
+ * /api/auth/register:
  *   post:
  *     tags:
  *       - Auth
@@ -23,7 +23,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/AuthTokens'
  *       400:
- *         description: Missing required fields or invalid username (must contain only English letters and numbers)
+ *         description: Missing required fields or invalid username format
  *         content:
  *           application/json:
  *             schema:
@@ -34,7 +34,7 @@ const router = express.Router();
 router.post("/register", authController.register);
 /**
  * @openapi
- * /auth/login:
+ * /api/auth/login:
  *   post:
  *     tags:
  *       - Auth
@@ -70,7 +70,7 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 /**
  * @openapi
- * /auth/google:
+ * /api/auth/google:
  *   post:
  *     tags:
  *       - Auth
@@ -106,7 +106,7 @@ router.post("/login", authController.login);
 router.post("/google", authController.googleLogin);
 /**
  * @openapi
- * /auth/logout:
+ * /api/auth/logout:
  *   post:
  *     tags:
  *       - Auth
@@ -146,7 +146,7 @@ router.post("/google", authController.googleLogin);
 router.post("/logout", authController.logout);
 /**
  * @openapi
- * /auth/refresh-token:
+ * /api/auth/refresh-token:
  *   post:
  *     tags:
  *       - Auth

@@ -8,7 +8,7 @@ const authController_1 = __importDefault(require("../controllers/authController"
 const router = express_1.default.Router();
 /**
  * @openapi
- * /auth/register:
+ * /api/auth/register:
  *   post:
  *     tags:
  *       - Auth
@@ -27,7 +27,7 @@ const router = express_1.default.Router();
  *             schema:
  *               $ref: '#/components/schemas/AuthTokens'
  *       400:
- *         description: Missing required fields or invalid username (must contain only English letters and numbers)
+ *         description: Missing required fields or invalid username format
  *         content:
  *           application/json:
  *             schema:
@@ -38,7 +38,7 @@ const router = express_1.default.Router();
 router.post("/register", authController_1.default.register);
 /**
  * @openapi
- * /auth/login:
+ * /api/auth/login:
  *   post:
  *     tags:
  *       - Auth
@@ -74,7 +74,7 @@ router.post("/register", authController_1.default.register);
 router.post("/login", authController_1.default.login);
 /**
  * @openapi
- * /auth/google:
+ * /api/auth/google:
  *   post:
  *     tags:
  *       - Auth
@@ -110,7 +110,7 @@ router.post("/login", authController_1.default.login);
 router.post("/google", authController_1.default.googleLogin);
 /**
  * @openapi
- * /auth/logout:
+ * /api/auth/logout:
  *   post:
  *     tags:
  *       - Auth
@@ -150,7 +150,7 @@ router.post("/google", authController_1.default.googleLogin);
 router.post("/logout", authController_1.default.logout);
 /**
  * @openapi
- * /auth/refresh-token:
+ * /api/auth/refresh-token:
  *   post:
  *     tags:
  *       - Auth

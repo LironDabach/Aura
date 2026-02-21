@@ -147,7 +147,10 @@ class PostsController extends baseController_1.default {
         return __awaiter(this, void 0, void 0, function* () {
             const userId = req.params.userId;
             try {
-                const posts = yield this.model.find({ senderID: userId });
+                const posts = yield this.model
+                    .find({ senderID: userId })
+                    .populate("senderID", "username profilePicture")
+                    .sort({ date: -1 });
                 res.json(posts);
             }
             catch (err) {
