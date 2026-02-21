@@ -42,7 +42,7 @@ afterAll(async () => {
 
 describe("Comments By Post ID API", () => {
   test("create by post id requires authentication", async () => {
-    const response = await request(app).post(`/comment/post/${createdPostId}`).send({
+    const response = await request(app).post(`/api/comment/post/${createdPostId}`).send({
       content: "No auth comment",
     });
 
@@ -51,7 +51,7 @@ describe("Comments By Post ID API", () => {
 
   test("creates a comment by post id route", async () => {
     const response = await request(app)
-      .post(`/comment/post/${createdPostId}`)
+      .post(`/api/comment/post/${createdPostId}`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({
         postID: new mongoose.Types.ObjectId().toString(),
@@ -70,7 +70,7 @@ describe("Comments By Post ID API", () => {
 
   test("create by post id uses authenticated user id over body userID", async () => {
     const response = await request(app)
-      .post(`/comment/post/${createdPostId}`)
+      .post(`/api/comment/post/${createdPostId}`)
       .set("Authorization", `Bearer ${otherAuthToken}`)
       .send({
         postID: createdPostId,
@@ -87,7 +87,7 @@ describe("Comments By Post ID API", () => {
   });
 
   test("gets comments by post id route", async () => {
-    const response = await request(app).get(`/comment/post/${createdPostId}`);
+    const response = await request(app).get(`/api/comment/post/${createdPostId}`);
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
@@ -99,7 +99,7 @@ describe("Comments By Post ID API", () => {
 
   test("update by post id requires authentication", async () => {
     const response = await request(app)
-      .put(`/comment/post/${createdPostId}/${createdCommentId}`)
+      .put(`/api/comment/post/${createdPostId}/${createdCommentId}`)
       .send({ content: "No auth update" });
 
     expect(response.status).toBe(401);
@@ -107,7 +107,7 @@ describe("Comments By Post ID API", () => {
 
   test("updates a comment by post id", async () => {
     const response = await request(app)
-      .put(`/comment/post/${createdPostId}/${createdCommentId}`)
+      .put(`/api/comment/post/${createdPostId}/${createdCommentId}`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({ content: "Updated comment" });
 
@@ -118,7 +118,7 @@ describe("Comments By Post ID API", () => {
   test("update by post id returns 404 when comment is missing", async () => {
     const missingId = new mongoose.Types.ObjectId().toString();
     const response = await request(app)
-      .put(`/comment/post/${createdPostId}/${missingId}`)
+      .put(`/api/comment/post/${createdPostId}/${missingId}`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({ content: "Nope" });
 
@@ -127,7 +127,7 @@ describe("Comments By Post ID API", () => {
 
   test("update by post id is forbidden when not creator", async () => {
     const response = await request(app)
-      .put(`/comment/post/${createdPostId}/${createdCommentId}`)
+      .put(`/api/comment/post/${createdPostId}/${createdCommentId}`)
       .set("Authorization", `Bearer ${otherAuthToken}`)
       .send({ content: "Should fail" });
 
@@ -136,7 +136,7 @@ describe("Comments By Post ID API", () => {
 
   test("update by post id rejects changing user, post or date", async () => {
     const response = await request(app)
-      .put(`/comment/post/${createdPostId}/${createdCommentId}`)
+      .put(`/api/comment/post/${createdPostId}/${createdCommentId}`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({
         userID: otherUserId,
@@ -150,7 +150,7 @@ describe("Comments By Post ID API", () => {
 
   test("delete by post id requires authentication", async () => {
     const response = await request(app).delete(
-      `/comment/post/${createdPostId}/${createdCommentId}`,
+      `/api/comment/post/${createdPostId}/${createdCommentId}`,
     );
 
     expect(response.status).toBe(401);
@@ -159,7 +159,7 @@ describe("Comments By Post ID API", () => {
   test("delete by post id returns 404 when comment is missing", async () => {
     const missingId = new mongoose.Types.ObjectId().toString();
     const response = await request(app)
-      .delete(`/comment/post/${createdPostId}/${missingId}`)
+      .delete(`/api/comment/post/${createdPostId}/${missingId}`)
       .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(404);
@@ -167,7 +167,7 @@ describe("Comments By Post ID API", () => {
 
   test("delete by post id is forbidden when not creator", async () => {
     const response = await request(app)
-      .delete(`/comment/post/${createdPostId}/${createdCommentId}`)
+      .delete(`/api/comment/post/${createdPostId}/${createdCommentId}`)
       .set("Authorization", `Bearer ${otherAuthToken}`);
 
     expect(response.status).toBe(403);
@@ -175,12 +175,12 @@ describe("Comments By Post ID API", () => {
 
   test("deletes a comment by post id route", async () => {
     const response = await request(app)
-      .delete(`/comment/post/${createdPostId}/${createdCommentId}`)
+      .delete(`/api/comment/post/${createdPostId}/${createdCommentId}`)
       .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
 
-    const check = await request(app).get(`/comment/post/${createdPostId}`);
+    const check = await request(app).get(`/api/comment/post/${createdPostId}`);
     expect(check.status).toBe(200);
     const ids = check.body.map((comment: { _id: string }) => comment._id);
     expect(ids).not.toContain(createdCommentId);

@@ -20,7 +20,7 @@ afterAll(async () => {
 });
 
 describe("Auth API", () => {
-  const username = "shiran_levi";
+  const username = "shiranlevi";
   const email = "liron.dabach3@gmail.com";
   const password = "StrongPass123!";
   let registerRefreshToken: string;
@@ -34,7 +34,7 @@ describe("Auth API", () => {
   });
 
   test("register requires username, email and password", async () => {
-    const response = await request(app).post("/auth/register").send({
+    const response = await request(app).post("/api/auth/register").send({
       username,
       email,
     });
@@ -44,7 +44,7 @@ describe("Auth API", () => {
   });
 
   test("registers a user and returns tokens", async () => {
-    const response = await request(app).post("/auth/register").send({
+    const response = await request(app).post("/api/auth/register").send({
       username,
       email,
       password,
@@ -71,25 +71,27 @@ describe("Auth API", () => {
 
     delete process.env.JWT_SECRET;
 
-    const response = await request(app).post("/auth/register").send({
-      username: `${username}_no_secret`,
-      email: `no_secret_${email}`,
-      password,
-    });
+    try {
+      const response = await request(app).post("/api/auth/register").send({
+        username: `${username}nosecret`,
+        email: `nosecret${email}`,
+        password,
+      });
 
-    expect(response.status).toBe(500);
-    expect(errorSpy).toHaveBeenCalled();
-    expect(exitSpy).toHaveBeenCalled();
-
-    if (originalSecret !== undefined) {
-      process.env.JWT_SECRET = originalSecret;
+      expect(response.status).toBe(500);
+      expect(errorSpy).toHaveBeenCalled();
+      expect(exitSpy).toHaveBeenCalled();
+    } finally {
+      if (originalSecret !== undefined) {
+        process.env.JWT_SECRET = originalSecret;
+      }
+      exitSpy.mockRestore();
+      errorSpy.mockRestore();
     }
-    exitSpy.mockRestore();
-    errorSpy.mockRestore();
   });
 
   test("login requires username and password", async () => {
-    const response = await request(app).post("/auth/login").send({
+    const response = await request(app).post("/api/auth/login").send({
       username,
     });
 
@@ -98,7 +100,7 @@ describe("Auth API", () => {
   });
 
   test("login fails when user is not found", async () => {
-    const response = await request(app).post("/auth/login").send({
+    const response = await request(app).post("/api/auth/login").send({
       username: `${username}_missing`,
       password,
     });
@@ -108,7 +110,7 @@ describe("Auth API", () => {
   });
 
   test("logs in a user and returns new tokens", async () => {
-    const response = await request(app).post("/auth/login").send({
+    const response = await request(app).post("/api/auth/login").send({
       username,
       password,
     });
@@ -127,7 +129,7 @@ describe("Auth API", () => {
   });
 
   test("login fails with invalid password", async () => {
-    const response = await request(app).post("/auth/login").send({
+    const response = await request(app).post("/api/auth/login").send({
       username,
       password: "WrongPass123!",
     });
@@ -141,7 +143,7 @@ describe("Auth API", () => {
       .spyOn(usersModel, "findOne")
       .mockRejectedValueOnce(new Error("db error"));
 
-    const response = await request(app).post("/auth/login").send({
+    const response = await request(app).post("/api/auth/login").send({
       username,
       password,
     });
@@ -159,7 +161,7 @@ describe("Auth API", () => {
     };
     const invakidToken = loginAccessToken + "invalid";
     const response = await request(app)
-      .post("/post")
+      .post("/api/post")
       .set("Authorization", `Bearer ${invakidToken}`)
       .send(postData);
 
@@ -167,7 +169,7 @@ describe("Auth API", () => {
   });
 
   test("missing Authorization header returns 401", async () => {
-    const response = await request(app).post("/post").send({
+    const response = await request(app).post("/api/post").send({
       title: "No auth header",
       content: "Should fail",
     });
@@ -178,7 +180,7 @@ describe("Auth API", () => {
 
   test("missing bearer token returns 401", async () => {
     const response = await request(app)
-      .post("/post")
+      .post("/api/post")
       .set("Authorization", "Bearer ")
       .send({
         title: "No token",
@@ -202,7 +204,7 @@ describe("Auth API", () => {
   });
 
   test("refreshes token and rotates refresh token", async () => {
-    const response = await request(app).post("/auth/refresh-token").send({
+    const response = await request(app).post("/api/auth/refresh-token").send({
       refreshToken: loginRefreshToken,
     });
 
@@ -219,7 +221,7 @@ describe("Auth API", () => {
   });
 
   test("logout revokes refresh token", async () => {
-    const response = await request(app).post("/auth/logout").send({
+    const response = await request(app).post("/api/auth/logout").send({
       refreshToken: refreshedRefreshToken,
     });
 
@@ -231,13 +233,13 @@ describe("Auth API", () => {
     expect(user?.refreshTokens).not.toContain(refreshedRefreshToken);
 
     const refreshAttempt = await request(app)
-      .post("/auth/refresh-token")
+      .post("/api/auth/refresh-token")
       .send({ refreshToken: refreshedRefreshToken });
     expect(refreshAttempt.status).toBe(401);
   });
 
   test("logout requires refresh token", async () => {
-    const response = await request(app).post("/auth/logout").send({});
+    const response = await request(app).post("/api/auth/logout").send({});
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty("message");
@@ -249,7 +251,7 @@ describe("Auth API", () => {
       usedSecret,
       { expiresIn: "1h" },
     );
-    const response = await request(app).post("/auth/logout").send({
+    const response = await request(app).post("/api/auth/logout").send({
       refreshToken: fakeToken,
     });
 
@@ -258,7 +260,7 @@ describe("Auth API", () => {
   });
 
   test("logout returns 500 for malformed refresh token", async () => {
-    const response = await request(app).post("/auth/logout").send({
+    const response = await request(app).post("/api/auth/logout").send({
       refreshToken: "not-a-jwt",
     });
 
@@ -267,7 +269,7 @@ describe("Auth API", () => {
   });
 
   test("refresh token requires refresh token", async () => {
-    const response = await request(app).post("/auth/refresh-token").send({});
+    const response = await request(app).post("/api/auth/refresh-token").send({});
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty("message");
@@ -279,7 +281,7 @@ describe("Auth API", () => {
       usedSecret,
       { expiresIn: "1h" },
     );
-    const response = await request(app).post("/auth/refresh-token").send({
+    const response = await request(app).post("/api/auth/refresh-token").send({
       refreshToken: fakeToken,
     });
 
@@ -288,7 +290,7 @@ describe("Auth API", () => {
   });
 
   test("refresh token returns 401 for malformed token", async () => {
-    const response = await request(app).post("/auth/refresh-token").send({
+    const response = await request(app).post("/api/auth/refresh-token").send({
       refreshToken: "not-a-jwt",
     });
 

@@ -13,7 +13,7 @@ const NotFound: React.FC = () => (
     <h1 style={{ fontSize: 64, margin: 0, color: '#e74c3c' }}>404</h1>
     <h2 style={{ margin: 0 }}>Page Not Found</h2>
     <p style={{ margin: 12 }}>The page you are looking for does not exist.</p>
-    <Link to="/" style={{ color: '#3498db', textDecoration: 'underline', fontSize: 18 }}>Go to Home</Link>
+    <Link to="/feed" style={{ color: '#3498db', textDecoration: 'underline', fontSize: 18 }}>Go to Feed</Link>
   </div>
 );
 
