@@ -10,7 +10,7 @@ import path from "path";
 import cors from "cors";
 
 
-dotenv.config({ path: ".env.development" });
+dotenv.config({ path: "../.env.development" });
 
 const app = express();
 app.use(cors());

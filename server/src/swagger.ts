@@ -32,6 +32,7 @@ const buildSwaggerSpec = () => {
         { name: "Auth", description: "Authentication and token management" },
         { name: "Posts", description: "Post CRUD operations" },
         { name: "Comments", description: "Comment CRUD operations" },
+        { name: "Likes", description: "Like/unlike operations" },
       ],
       components: {
         securitySchemes: {
@@ -148,6 +149,15 @@ const buildSwaggerSpec = () => {
             properties: {
               title: { type: "string", example: "Shiran Levi: Updated Title" },
               body: { type: "string", example: "Liron Dabach updated body." },
+            },
+          },
+          Like: {
+            type: "object",
+            properties: {
+              _id: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6c0" },
+              postID: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b7" },
+              senderID: { type: "string", example: "64f1c2a1b0c1c2d3e4f5a6b8" },
+              date: { type: "string", format: "date-time", example: "2026-02-18T10:00:00.000Z" },
             },
           },
           Comment: {

@@ -6,7 +6,7 @@ import postsModel from "./models/postsModel";
 import commentsModel from "./models/commentsModel";
 import likesModel from "./models/likesModel";
 
-dotenv.config({ path: ".env.development" });
+dotenv.config({ path: "../.env.development" });
 
 const SEED_TAG = "SEED_AURA";
 const REQUIRED_USERS = [

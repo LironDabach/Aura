@@ -8,8 +8,6 @@ class BaseController {
   }
 
   async getAll(req: Request, res: Response) {
-    await new Promise<void>((resolve) => setTimeout(() => resolve(), 200));
-
     try {
       if (req.query) {
         const filterData = await this.model.find(req.query);
