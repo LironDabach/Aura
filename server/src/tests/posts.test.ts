@@ -5,6 +5,7 @@ import { Express } from "express";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import BaseController from "../controllers/baseController";
+import { deleteUploadedFileByUrl } from "../middleware/uploadMiddleware";
 
 let app: Express;
 let authToken: string;
@@ -13,6 +14,17 @@ const userId = new mongoose.Types.ObjectId().toString();
 const otherUserId = new mongoose.Types.ObjectId().toString();
 let createdPostId: string;
 let createdOtherPostId: string;
+let uploadedPostId: string;
+let uploadedPostImageUrl: string;
+let replacedPostImageUrl: string;
+const uploadedUrls: string[] = [];
+
+const trackUpload = (url: string) => {
+  uploadedUrls.push(url);
+  return url;
+};
+
+const toRelativeUrl = (fullUrl: string) => fullUrl.replace(/^.*\/\/[^/]+/, "");
 
 beforeAll(async () => {
   jest.setTimeout(20000);
@@ -23,6 +35,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  for (const url of uploadedUrls) {
+    await deleteUploadedFileByUrl(url);
+  }
   await postsModel.deleteMany({ senderID: { $in: [userId, otherUserId] } });
   await mongoose.connection.close();
 });
@@ -37,6 +52,7 @@ describe("Posts CRUD API", () => {
         title: "First post",
         body: "Hello from tests",
         senderID: userId,
+        imageUrl: "https://example.com/post-1.png",
         date: "2000-01-01T00:00:00.000Z",
       });
 
@@ -59,12 +75,34 @@ describe("Posts CRUD API", () => {
         title: "Other post",
         body: "Other body",
         senderID: userId,
+        imageUrl: "https://example.com/post-2.png",
       });
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("_id");
     expect(response.body.senderID).toBe(otherUserId);
     createdOtherPostId = response.body._id;
+  });
+
+  test("creates a post with multipart upload and exposes imageUrl", async () => {
+    const filePath = `${__dirname}/aura_test_file.png`;
+    const response = await request(app)
+      .post("/api/post")
+      .set("Authorization", `Bearer ${authToken}`)
+      .field("title", "File post")
+      .field("body", "Multipart body")
+      .attach("file", filePath);
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("_id");
+    expect(response.body).toHaveProperty("imageUrl");
+    expect(response.body.imageUrl).toContain("/api/upload/");
+
+    uploadedPostId = response.body._id;
+    uploadedPostImageUrl = trackUpload(response.body.imageUrl);
+
+    const fetchResponse = await request(app).get(toRelativeUrl(response.body.imageUrl));
+    expect(fetchResponse.status).toBe(200);
   });
 
   test("gets all posts", async () => {
@@ -114,6 +152,38 @@ describe("Posts CRUD API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.title).toBe("Updated post");
+  });
+
+  test("update with multipart file replaces image and deletes old file", async () => {
+    const filePath = `${__dirname}/aura_test_file...name...with...dots.txt`;
+    const response = await request(app)
+      .put(`/api/post/${uploadedPostId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .field("title", "Updated with file")
+      .attach("file", filePath);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("imageUrl");
+    expect(response.body.imageUrl).toContain("/api/upload/");
+    expect(response.body.imageUrl).not.toBe(uploadedPostImageUrl);
+
+    replacedPostImageUrl = trackUpload(response.body.imageUrl);
+
+    const oldFetch = await request(app).get(toRelativeUrl(uploadedPostImageUrl));
+    expect(oldFetch.status).toBe(404);
+
+    const newFetch = await request(app).get(toRelativeUrl(replacedPostImageUrl));
+    expect(newFetch.status).toBe(200);
+  });
+
+  test("update without file keeps existing imageUrl", async () => {
+    const response = await request(app)
+      .put(`/api/post/${uploadedPostId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ title: "Updated without file" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.imageUrl).toBe(replacedPostImageUrl);
   });
 
   test("update returns 404 when post is missing", async () => {
@@ -196,6 +266,27 @@ describe("Posts CRUD API", () => {
 
     const check = await request(app).get(`/api/post/${createdPostId}`);
     expect(check.status).toBe(404);
+  });
+
+  test("delete removes uploaded image file", async () => {
+    const filePath = `${__dirname}/aura_test_file.png`;
+    const createResponse = await request(app)
+      .post("/api/post")
+      .set("Authorization", `Bearer ${authToken}`)
+      .field("title", "Delete file post")
+      .field("body", "File body")
+      .attach("file", filePath);
+
+    expect(createResponse.status).toBe(201);
+    const deleteImageUrl = trackUpload(createResponse.body.imageUrl);
+
+    const delResponse = await request(app)
+      .delete(`/api/post/${createResponse.body._id}`)
+      .set("Authorization", `Bearer ${authToken}`);
+    expect(delResponse.status).toBe(200);
+
+    const fetchResponse = await request(app).get(toRelativeUrl(deleteImageUrl));
+    expect(fetchResponse.status).toBe(404);
   });
 });
 

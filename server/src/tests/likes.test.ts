@@ -24,6 +24,7 @@ beforeAll(async () => {
     title: "Post for likes",
     body: "Seed post body",
     senderID: userId,
+    imageUrl: "https://example.com/like-seed.png",
   });
   createdPostId = createdPost._id.toString();
 
@@ -75,6 +76,7 @@ describe("Likes API", () => {
       title: "Post without likes",
       body: "No likes yet",
       senderID: userId,
+      imageUrl: "https://example.com/no-likes-seed.png",
     });
     createdNoLikesPostId = createdOtherPost._id.toString();
 

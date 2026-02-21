@@ -9,6 +9,7 @@ const postsRoute_1 = __importDefault(require("./routes/postsRoute"));
 const commentsRoute_1 = __importDefault(require("./routes/commentsRoute"));
 const likesRoute_1 = __importDefault(require("./routes/likesRoute"));
 const authRoute_1 = __importDefault(require("./routes/authRoute"));
+const multerRoute_1 = __importDefault(require("./routes/multerRoute"));
 const swagger_1 = require("./swagger");
 const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
@@ -25,6 +26,8 @@ app.use("/api/post", postsRoute_1.default);
 app.use("/api/comment", commentsRoute_1.default);
 app.use("/api/like", likesRoute_1.default);
 app.use("/api/auth", authRoute_1.default);
+app.use('/api/upload', express_1.default.static('public/uploads'));
+app.use("/api/upload", multerRoute_1.default);
 // Serve React static files from dist
 const distPath = path_1.default.resolve(process.cwd(), "../client/dist");
 app.use(express_1.default.static(distPath));

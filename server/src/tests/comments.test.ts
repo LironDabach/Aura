@@ -22,6 +22,7 @@ beforeAll(async () => {
     title: "Post for comments",
     body: "Seed post body",
     senderID: userId,
+    imageUrl: "https://example.com/comment-seed.png",
   });
   createdPostId = createdPost._id.toString();
   const secret = process.env.JWT_SECRET || "default_secret";

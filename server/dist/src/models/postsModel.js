@@ -22,6 +22,10 @@ const postSchema = new mongoose_1.default.Schema({
         type: Date,
         default: Date.now,
     },
+    imageUrl: {
+        type: String,
+        required: true,
+    },
 });
 exports.default = mongoose_1.default.model("post", postSchema);
 //# sourceMappingURL=postsModel.js.map

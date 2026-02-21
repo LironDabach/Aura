@@ -2,6 +2,12 @@ import { Request, Response } from "express";
 import baseController from "./baseController";
 import postsModel from "../models/postsModel";
 import { AuthRequest } from "../middleware/authMiddleware";
+import {
+  buildUploadedFileUrl,
+  deleteUploadedFileByUrl,
+} from "../middleware/uploadMiddleware";
+
+type AuthUploadRequest = AuthRequest & { file?: Express.Multer.File };
 
 class PostsController extends baseController {
   constructor() {
@@ -55,16 +61,23 @@ class PostsController extends baseController {
     }
   }
 
-  async create(req: AuthRequest, res: Response) {
+  async create(req: AuthUploadRequest, res: Response) {
     if (req.user) {
       req.body.senderID = req.user._id; // Associate post with user ID from token
+    }
+    if (req.file?.filename) {
+      req.body.imageUrl = buildUploadedFileUrl(req, req.file.filename);
+    }
+    if (!req.body.imageUrl) {
+      res.status(400).send("Error: imageUrl or file is required");
+      return;
     }
     // Keep post date server-managed to prevent spoofing.
     req.body.date = new Date();
     return super.create(req, res);
   }
 
-  async update(req: AuthRequest, res: Response) {
+  async update(req: AuthUploadRequest, res: Response) {
     const id = req.params.id;
     try {
       const post = await this.model.findById(id);
@@ -76,7 +89,7 @@ class PostsController extends baseController {
         res.status(400).send("Error: Cannot change creator of the post");
         return;
       }
-      if (req.body.date && req.body.date !== post.date.toISOString()) {
+      if (req.body.date) {
         res.status(400).send("Error: Cannot change post date");
         return;
       }
@@ -84,8 +97,24 @@ class PostsController extends baseController {
         res.status(403).send("Forbidden: Not the creator of the post");
         return;
       }
-      super.update(req, res);
-      return;
+
+      const oldImageUrl = post.imageUrl;
+      if (req.file?.filename) {
+        req.body.imageUrl = buildUploadedFileUrl(req, req.file.filename);
+      }
+
+      const data = await this.model.findByIdAndUpdate(id, req.body, {
+        new: true,
+      });
+      if (!data) {
+        res.status(404).send("Error: Post not found");
+        return;
+      }
+
+      if (req.file?.filename && oldImageUrl && oldImageUrl !== data.imageUrl) {
+        await deleteUploadedFileByUrl(oldImageUrl);
+      }
+      res.json(data);
     } catch (err) {
       console.error(err);
       res.status(500).send("Error: Can't update post");
@@ -101,7 +130,13 @@ class PostsController extends baseController {
         return;
       }
       if (req.user && post.senderID.toString() === req.user._id) {
-        super.del(req, res);
+        const deletedData = await this.model.findByIdAndDelete(id);
+        if (!deletedData) {
+          res.status(404).send("Post not found");
+          return;
+        }
+        await deleteUploadedFileByUrl(deletedData.imageUrl);
+        res.status(200).json(deletedData);
         return;
       } else {
         console.log("req.user:", req.user);
@@ -118,10 +153,7 @@ class PostsController extends baseController {
   async getByUserId(req: Request, res: Response) {
     const userId = req.params.userId;
     try {
-      const posts = await this.model
-        .find({ senderID: userId })
-        .populate("senderID", "username profilePicture")
-        .sort({ date: -1 });
+      const posts = await this.model.find({ senderID: userId }).sort({ date: -1 });
       res.json(posts);
     } catch (err) {
       console.error(err);
