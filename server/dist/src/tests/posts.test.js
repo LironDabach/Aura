@@ -18,6 +18,7 @@ const postsModel_1 = __importDefault(require("../models/postsModel"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const baseController_1 = __importDefault(require("../controllers/baseController"));
+const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
 let app;
 let authToken;
 let otherAuthToken;
@@ -25,6 +26,15 @@ const userId = new mongoose_1.default.Types.ObjectId().toString();
 const otherUserId = new mongoose_1.default.Types.ObjectId().toString();
 let createdPostId;
 let createdOtherPostId;
+let uploadedPostId;
+let uploadedPostImageUrl;
+let replacedPostImageUrl;
+const uploadedUrls = [];
+const trackUpload = (url) => {
+    uploadedUrls.push(url);
+    return url;
+};
+const toRelativeUrl = (fullUrl) => fullUrl.replace(/^.*\/\/[^/]+/, "");
 beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     jest.setTimeout(20000);
     app = yield (0, index_1.default)();
@@ -33,6 +43,9 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     otherAuthToken = jsonwebtoken_1.default.sign({ _id: otherUserId }, secret, { expiresIn: "1h" });
 }));
 afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
+    for (const url of uploadedUrls) {
+        yield (0, uploadMiddleware_1.deleteUploadedFileByUrl)(url);
+    }
     yield postsModel_1.default.deleteMany({ senderID: { $in: [userId, otherUserId] } });
     yield mongoose_1.default.connection.close();
 }));
@@ -46,6 +59,7 @@ describe("Posts CRUD API", () => {
             title: "First post",
             body: "Hello from tests",
             senderID: userId,
+            imageUrl: "https://example.com/post-1.png",
             date: "2000-01-01T00:00:00.000Z",
         });
         expect(response.status).toBe(201);
@@ -64,11 +78,29 @@ describe("Posts CRUD API", () => {
             title: "Other post",
             body: "Other body",
             senderID: userId,
+            imageUrl: "https://example.com/post-2.png",
         });
         expect(response.status).toBe(201);
         expect(response.body).toHaveProperty("_id");
         expect(response.body.senderID).toBe(otherUserId);
         createdOtherPostId = response.body._id;
+    }));
+    test("creates a post with multipart upload and exposes imageUrl", () => __awaiter(void 0, void 0, void 0, function* () {
+        const filePath = `${__dirname}/aura_test_file.png`;
+        const response = yield (0, supertest_1.default)(app)
+            .post("/api/post")
+            .set("Authorization", `Bearer ${authToken}`)
+            .field("title", "File post")
+            .field("body", "Multipart body")
+            .attach("file", filePath);
+        expect(response.status).toBe(201);
+        expect(response.body).toHaveProperty("_id");
+        expect(response.body).toHaveProperty("imageUrl");
+        expect(response.body.imageUrl).toContain("/api/upload/");
+        uploadedPostId = response.body._id;
+        uploadedPostImageUrl = trackUpload(response.body.imageUrl);
+        const fetchResponse = yield (0, supertest_1.default)(app).get(toRelativeUrl(response.body.imageUrl));
+        expect(fetchResponse.status).toBe(200);
     }));
     test("gets all posts", () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app).get("/api/post");
@@ -108,6 +140,31 @@ describe("Posts CRUD API", () => {
         });
         expect(response.status).toBe(200);
         expect(response.body.title).toBe("Updated post");
+    }));
+    test("update with multipart file replaces image and deletes old file", () => __awaiter(void 0, void 0, void 0, function* () {
+        const filePath = `${__dirname}/aura_test_file...name...with...dots.txt`;
+        const response = yield (0, supertest_1.default)(app)
+            .put(`/api/post/${uploadedPostId}`)
+            .set("Authorization", `Bearer ${authToken}`)
+            .field("title", "Updated with file")
+            .attach("file", filePath);
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("imageUrl");
+        expect(response.body.imageUrl).toContain("/api/upload/");
+        expect(response.body.imageUrl).not.toBe(uploadedPostImageUrl);
+        replacedPostImageUrl = trackUpload(response.body.imageUrl);
+        const oldFetch = yield (0, supertest_1.default)(app).get(toRelativeUrl(uploadedPostImageUrl));
+        expect(oldFetch.status).toBe(404);
+        const newFetch = yield (0, supertest_1.default)(app).get(toRelativeUrl(replacedPostImageUrl));
+        expect(newFetch.status).toBe(200);
+    }));
+    test("update without file keeps existing imageUrl", () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .put(`/api/post/${uploadedPostId}`)
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ title: "Updated without file" });
+        expect(response.status).toBe(200);
+        expect(response.body.imageUrl).toBe(replacedPostImageUrl);
     }));
     test("update returns 404 when post is missing", () => __awaiter(void 0, void 0, void 0, function* () {
         const missingId = new mongoose_1.default.Types.ObjectId().toString();
@@ -171,6 +228,23 @@ describe("Posts CRUD API", () => {
         expect(response.status).toBe(200);
         const check = yield (0, supertest_1.default)(app).get(`/api/post/${createdPostId}`);
         expect(check.status).toBe(404);
+    }));
+    test("delete removes uploaded image file", () => __awaiter(void 0, void 0, void 0, function* () {
+        const filePath = `${__dirname}/aura_test_file.png`;
+        const createResponse = yield (0, supertest_1.default)(app)
+            .post("/api/post")
+            .set("Authorization", `Bearer ${authToken}`)
+            .field("title", "Delete file post")
+            .field("body", "File body")
+            .attach("file", filePath);
+        expect(createResponse.status).toBe(201);
+        const deleteImageUrl = trackUpload(createResponse.body.imageUrl);
+        const delResponse = yield (0, supertest_1.default)(app)
+            .delete(`/api/post/${createResponse.body._id}`)
+            .set("Authorization", `Bearer ${authToken}`);
+        expect(delResponse.status).toBe(200);
+        const fetchResponse = yield (0, supertest_1.default)(app).get(toRelativeUrl(deleteImageUrl));
+        expect(fetchResponse.status).toBe(404);
     }));
 });
 describe("BaseController error handling", () => {

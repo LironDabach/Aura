@@ -6,6 +6,7 @@ import {
   buildUploadedFileUrl,
   deleteUploadedFileByUrl,
 } from "../middleware/uploadMiddleware";
+import searchService, { SearchValidationError } from "../services/searchService";
 
 type AuthUploadRequest = AuthRequest & { file?: Express.Multer.File };
 
@@ -158,6 +159,24 @@ class PostsController extends baseController {
     } catch (err) {
       console.error(err);
       res.status(500).send("Error: Can't retrieve posts by user ID");
+    }
+  }
+
+  async searchAi(req: Request, res: Response) {
+    const q = (req.query.q as string) || "";
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const defaultLimit = parseInt(process.env.POSTS_PER_PAGE || "5");
+    const limit = Math.max(1, parseInt(req.query.limit as string) || defaultLimit);
+
+    try {
+      const results = await searchService.searchPostsAi(q, page, limit);
+      return res.json(results);
+    } catch (err) {
+      if (err instanceof SearchValidationError) {
+        return res.status(400).send(`Error: ${err.message}`);
+      }
+      console.error(err);
+      return res.status(500).send("Error: Can't search posts");
     }
   }
 }
