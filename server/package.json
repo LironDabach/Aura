@@ -13,6 +13,10 @@
     "testAuth": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/auth.test.ts",
     "testLike": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/likes.test.ts",
     "testMulter": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/multer.test.ts",
+    "testUser": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/users.test.ts",
+    "testllmService": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/llmService.test.ts",
+    "testPostsSearch": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/postsSearch.test.ts",
+    "testSearchService": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/searchService.test.ts",
     "jestCoverage": "jest --coverage --runInBand --detectOpenHandles --forceExit"
   },
   "repository": {

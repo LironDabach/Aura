@@ -33,6 +33,7 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
         title: "Post for likes",
         body: "Seed post body",
         senderID: userId,
+        imageUrl: "https://example.com/like-seed.png",
     });
     createdPostId = createdPost._id.toString();
     const secret = process.env.JWT_SECRET || "default_secret";
@@ -75,6 +76,7 @@ describe("Likes API", () => {
             title: "Post without likes",
             body: "No likes yet",
             senderID: userId,
+            imageUrl: "https://example.com/no-likes-seed.png",
         });
         createdNoLikesPostId = createdOtherPost._id.toString();
         const response = yield (0, supertest_1.default)(app).get(`/api/like/post/${createdOtherPost._id.toString()}`);

@@ -53,6 +53,60 @@ router.get("/", postsController.getAll.bind(postsController));
 
 /**
  * @openapi
+ * /api/post/search/ai:
+ *   get:
+ *     tags:
+ *       - Posts
+ *     summary: Search posts using AI
+ *     description: Returns posts matching the search query using AI-powered search. Supports pagination via query params.
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The search query
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number (1-based)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Posts per page (defaults to POSTS_PER_PAGE env variable)
+ *     responses:
+ *       200:
+ *         description: Paginated list of posts matching the search query
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 posts:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *                 page:
+ *                   type: integer
+ *                   example: 1
+ *                 totalPages:
+ *                   type: integer
+ *                   example: 4
+ *                 total:
+ *                   type: integer
+ *                   example: 18
+ *       400:
+ *         description: Missing search query parameter 'q'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/search/ai", postsController.searchAi.bind(postsController));
+
+/**
+ * @openapi
  * /api/post/{id}:
  *   get:
  *     tags:

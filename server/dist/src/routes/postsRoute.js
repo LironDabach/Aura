@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const postsController_1 = __importDefault(require("../controllers/postsController"));
+const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
 const router = express_1.default.Router();
 /**
  * @openapi
@@ -52,6 +53,59 @@ const router = express_1.default.Router();
  *         description: Internal server error
  */
 router.get("/", postsController_1.default.getAll.bind(postsController_1.default));
+/**
+ * @openapi
+ * /api/post/search/ai:
+ *   get:
+ *     tags:
+ *       - Posts
+ *     summary: Search posts using AI
+ *     description: Returns posts matching the search query using AI-powered search. Supports pagination via query params.
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The search query
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number (1-based)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Posts per page (defaults to POSTS_PER_PAGE env variable)
+ *     responses:
+ *       200:
+ *         description: Paginated list of posts matching the search query
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 posts:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *                 page:
+ *                   type: integer
+ *                   example: 1
+ *                 totalPages:
+ *                   type: integer
+ *                   example: 4
+ *                 total:
+ *                   type: integer
+ *                   example: 18
+ *       400:
+ *         description: Missing search query parameter 'q'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/search/ai", postsController_1.default.searchAi.bind(postsController_1.default));
 /**
  * @openapi
  * /api/post/{id}:
@@ -122,6 +176,9 @@ router.get("/user/:userId", postsController_1.default.getByUserId.bind(postsCont
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/PostCreate'
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/PostCreate'
  *     responses:
  *       201:
  *         description: Post created
@@ -134,7 +191,7 @@ router.get("/user/:userId", postsController_1.default.getByUserId.bind(postsCont
  *       500:
  *         description: Internal server error
  */
-router.post("/", authMiddleware_1.authenticate, postsController_1.default.create.bind(postsController_1.default));
+router.post("/", authMiddleware_1.authenticate, uploadMiddleware_1.uploadSingle, postsController_1.default.create.bind(postsController_1.default));
 /**
  * @openapi
  * /api/post/{id}:
@@ -157,6 +214,9 @@ router.post("/", authMiddleware_1.authenticate, postsController_1.default.create
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/PostUpdate'
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/PostUpdate'
  *     responses:
  *       200:
  *         description: Post updated
@@ -175,7 +235,7 @@ router.post("/", authMiddleware_1.authenticate, postsController_1.default.create
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", authMiddleware_1.authenticate, postsController_1.default.update.bind(postsController_1.default));
+router.put("/:id", authMiddleware_1.authenticate, uploadMiddleware_1.uploadSingle, postsController_1.default.update.bind(postsController_1.default));
 /**
  * @openapi
  * /api/post/{id}:
