@@ -1,19 +1,19 @@
-# Aura
+# 👾 Aura
 
 Aura is a full-stack social platform where users can register/login, publish posts, comment, like, and use AI-assisted post search.
 
-## Team
-- **Lecturer:** Eliav Menashe
-- **Students:** Shiran Levi (324127315), Liron Dabach (322439027)
+## 👨🏻‍🏫 Team
+- **מרצה:** אליאב מנשה
+- **סטודנטים:** שירן לוי (324127315), לירון דבח (322439027)
 
-## Tech Stack
+## 🧱 Tech Stack
 - **Client:** React + TypeScript + Vite
 - **Server:** Node.js + Express + TypeScript
 - **Database:** MongoDB + Mongoose
 - **Auth:** JWT access token + refresh token flow
 - **Docs:** Swagger (`/api-docs`)
 
-## Features
+## 🧠 Features
 - Email/password authentication
 - Google OAuth login (`/api/auth/google`)
 - CRUD for posts, comments, and likes
@@ -22,7 +22,7 @@ Aura is a full-stack social platform where users can register/login, publish pos
   - `GET /api-docs`
   - `GET /api-docs.json`
 
-## Repository Structure
+## 🗂️ Repository Structure
 - `client/` React app
 - `server/` Express API
 - `server/src/routes` API endpoints
@@ -31,12 +31,12 @@ Aura is a full-stack social platform where users can register/login, publish pos
 - `server/src/services` business/AI services
 - `server/src/tests` Jest and Supertest coverage
 
-## Prerequisites
+## ✅ Prerequisites
 - Node.js (LTS)
 - npm
 - MongoDB (local or remote)
 
-## Environment Variables
+## 🌱 Environment Variables
 
 The project reads env files from the repository root:
 - `.env.development` for local development
@@ -68,7 +68,7 @@ LLM_TIMEOUT_MS=15000
 LLM_MODEL=llama3.1:8b
 ```
 
-## Install
+## 📦 Install
 
 From repository root:
 
@@ -76,7 +76,7 @@ From repository root:
 npm install
 ```
 
-## Run (Development)
+## ⚡ Run (Development)
 
 Run client and server in separate terminals:
 
@@ -97,7 +97,7 @@ Default URLs:
 - Server: `http://localhost:3000`
 - Swagger: `http://localhost:3000/api-docs`
 
-## Run (Production-style server build)
+## 🚀 Run (Production-style server build)
 
 ```bash
 cd server
@@ -106,7 +106,7 @@ npm run start
 
 This compiles TypeScript and starts the API with `.env.production`.
 
-## Tests
+## 🧪 Tests
 
 From repository root:
 
@@ -130,7 +130,7 @@ npm run testSearchService
 npm run testllmService
 ```
 
-## API Base Paths
+## 🔌 API Base Paths
 - `/api/auth`
 - `/api/user`
 - `/api/post`
