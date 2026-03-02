@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import Create from "./pages/Create";
+import Search from "./pages/Search";
 import NotFound from "./components/NotFound";
 import Layout from "./components/Layout";
 
@@ -29,6 +30,7 @@ function App() {
       <Route path="/feed" element={<RequireAuth><Layout><Feed /></Layout></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Layout><Profile /></Layout></RequireAuth>} />
       <Route path="/create" element={<RequireAuth><Layout><Create /></Layout></RequireAuth>} />
+      <Route path="/search" element={<RequireAuth><Layout><Search /></Layout></RequireAuth>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
