@@ -58,11 +58,6 @@ const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  // Check if body looks like an image URL
-  const isImage =
-    /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(post.body) ||
-    /^https?:\/\/.*\/(photo|image|img|media)\b/i.test(post.body);
-
   return (
     <article className="post-card">
       {/* ── Header ── */}
@@ -84,19 +79,16 @@ const PostCard: React.FC<PostCardProps> = ({
 
       {/* ── Body ── */}
       <div className="post-card-body">
-        {isImage ? (
+        {post.imageUrl && (
           <img
             className="post-card-image"
-            src={post.body}
+            src={post.imageUrl}
             alt={post.title}
             loading="lazy"
           />
-        ) : (
-          <>
-            {post.title && <h3 className="post-card-title">{post.title}</h3>}
-            <p className="post-card-text">{post.body}</p>
-          </>
         )}
+        {post.title && <h3 className="post-card-title">{post.title}</h3>}
+        {post.body && <p className="post-card-text">{post.body}</p>}
       </div>
 
       {/* ── Footer ── */}

@@ -27,8 +27,20 @@ export const getPostsByUser = async (userId: string): Promise<Post[]> => {
   return res.data;
 };
 
-export const createPost = async (data: { title: string; body: string }): Promise<Post> => {
-  const res = await api.post("/api/post", data);
+export const createPost = async (data: { title: string; body: string; imageUrl?: string; image?: File }): Promise<Post> => {
+  // If image file is provided, send as multipart/form-data
+  if (data.image) {
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("body", data.body);
+    formData.append("file", data.image);
+    const res = await api.post("/api/post", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
+  }
+  // Otherwise send JSON with imageUrl
+  const res = await api.post("/api/post", { title: data.title, body: data.body, imageUrl: data.imageUrl });
   return res.data;
 };
 

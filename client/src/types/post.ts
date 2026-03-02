@@ -4,6 +4,7 @@ export type Post = {
   body: string;
   senderID: string | { _id: string; username: string; profilePicture?: string };
   date: string;
+  imageUrl: string;
 };
 
 export type Like = {
