@@ -15,7 +15,7 @@ type PostMeta = {
   isLikedByMe: boolean;
 };
 
-const Dashboard: React.FC = () => {
+const Feed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [meta, setMeta] = useState<Record<string, PostMeta>>({});
   const [loading, setLoading] = useState(true);
@@ -161,4 +161,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default Feed;
