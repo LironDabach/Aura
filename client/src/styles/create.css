@@ -102,6 +102,34 @@
   object-fit: cover;
 }
 
+/* ── File input ── */
+.create-file-input {
+  margin-top: 6px;
+}
+
+.create-input-file {
+  display: none;
+}
+
+.create-file-label {
+  display: block;
+  padding: 10px 14px;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.create-file-label:hover {
+  border-color: #6366f1;
+  background: #eef2ff;
+  color: #6366f1;
+}
+
 /* ── Submit ── */
 .create-submit {
   margin-top: 16px;

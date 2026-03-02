@@ -76,6 +76,7 @@ const seed = async () => {
       title: `${SEED_TAG} Post ${i + 1}`,
       body: `${SEED_TAG} Body for post ${i + 1}`,
       senderID: userIds[i % userIds.length],
+      imageUrl: `https://picsum.photos/seed/aura-seed-${i + 1}/640/360`,
     }));
     const createdPosts = await postsModel.insertMany(postsToCreate);
 

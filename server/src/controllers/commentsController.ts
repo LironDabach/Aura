@@ -30,7 +30,18 @@ class CommentsController extends baseController {
       req.body.userID = req.user._id; // Associate comment with user ID from token
     }
     req.body.postID = postId; // Associate comment with the post ID from URL
-    return super.create(req, res);
+    
+    try {
+      const newComment = await this.model.create(req.body);
+      // Populate user info before returning
+      const populatedComment = await this.model
+        .findById(newComment._id)
+        .populate("userID", "username");
+      res.status(201).json(populatedComment);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Error creating comment");
+    }
   }
 
   // Update a comment for a specific post
@@ -64,8 +75,18 @@ class CommentsController extends baseController {
           );
         return;
       }
-      req.params.id = commentId;
-      super.update(req, res);
+      
+      // Update and populate user info before returning
+      const updatedComment = await this.model
+        .findByIdAndUpdate(commentId, req.body, { new: true })
+        .populate("userID", "username");
+      
+      if (!updatedComment) {
+        res.status(404).send("Comment not found");
+        return;
+      }
+      
+      res.status(200).json(updatedComment);
       return;
     } catch (err) {
       console.error(err);
