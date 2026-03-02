@@ -127,3 +127,18 @@ export const deleteComment = async (
 ): Promise<void> => {
   await api.delete(`/api/comment/post/${postId}/${commentId}`);
 };
+
+// ── AI Search ──
+
+export type AiSearchResult = PaginatedPosts & { source: "llm" | "fallback" };
+
+export const searchPostsAi = async (
+  query: string,
+  page = 1,
+  limit?: number
+): Promise<AiSearchResult> => {
+  const params: Record<string, string | number> = { q: query, page };
+  if (limit) params.limit = limit;
+  const res = await api.get("/api/post/search/ai", { params });
+  return res.data;
+};
