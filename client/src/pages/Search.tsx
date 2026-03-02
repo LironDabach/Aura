@@ -1,92 +1,117 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import PostCard from "../components/PostCard";
 import CommentsSidebar from "../components/CommentsSidebar";
-import {
-  searchPostsAi,
-  getLikesForPost,
-  getCommentsForPost,
-} from "../services/posts";
+import { searchPostsAi, getLikesForPost, getCommentsForPost } from "../services/posts";
 import type { Post } from "../types/post";
 import "../styles/search.css";
 
-type PostMeta = {
-  likeCount: number;
-  commentCount: number;
-  isLikedByMe: boolean;
-};
-
-const SUGGESTIONS = [
+// suggestions that appear before the user searches
+const suggestions = [
   "Show me the most liked posts",
   "Posts about technology",
   "Posts from last week with comments",
   "Posts mentioning travel",
 ];
 
-const Search: React.FC = () => {
+function Search() {
+  // search input & results
   const [query, setQuery] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
-  const [meta, setMeta] = useState<Record<string, PostMeta>>({});
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState("");
+  const [searched, setSearched] = useState(false);
+
+  // pagination
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [total, setTotal] = useState(0);
+
+  // tells us if the results came from the AI or from regex fallback
   const [source, setSource] = useState<"llm" | "fallback" | null>(null);
-  const [searched, setSearched] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  // likes & comments count for each post
+  const [meta, setMeta] = useState<Record<string, {
+    likeCount: number;
+    commentCount: number;
+    isLikedByMe: boolean;
+  }>>({});
+
+  // which post's comments sidebar is open (null = closed)
   const [sidebarPostId, setSidebarPostId] = useState<string | null>(null);
+
+  // refs
   const inputRef = useRef<HTMLInputElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const activeQuery = useRef("");
+  const activeQuery = useRef(""); // keeps track of the current query for pagination
 
+  // auto-focus the search input on page load
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const fetchMeta = async (newPosts: Post[]) => {
+  /**
+   * For each post, fetch its likes and comments from the server
+   * and figure out if the current user already liked it
+   */
+  const fetchMeta = async (postsToFetch: Post[]) => {
     const userRaw = localStorage.getItem("user");
     const currentUserId = userRaw ? JSON.parse(userRaw)?._id : null;
 
-    const entries = await Promise.all(
-      newPosts.map(async (p) => {
+    const results: Record<string, { likeCount: number; commentCount: number; isLikedByMe: boolean }> = {};
+
+    for (const post of postsToFetch) {
+      try {
         const [likes, comments] = await Promise.all([
-          getLikesForPost(p._id).catch(() => []),
-          getCommentsForPost(p._id).catch(() => []),
+          getLikesForPost(post._id),
+          getCommentsForPost(post._id),
         ]);
-        const isLikedByMe = currentUserId
-          ? likes.some((l) => l.senderID === currentUserId)
+
+        const didILike = currentUserId
+          ? likes.some((like) => like.senderID === currentUserId)
           : false;
-        return [
-          p._id,
-          { likeCount: likes.length, commentCount: comments.length, isLikedByMe },
-        ] as const;
-      })
-    );
-    return Object.fromEntries(entries);
+
+        results[post._id] = {
+          likeCount: likes.length,
+          commentCount: comments.length,
+          isLikedByMe: didILike,
+        };
+      } catch {
+        // if fetching meta fails for a post, just use zeros
+        results[post._id] = { likeCount: 0, commentCount: 0, isLikedByMe: false };
+      }
+    }
+
+    return results;
   };
 
-  const doSearch = async (q: string, pageNum = 1, append = false) => {
-    if (!q.trim()) return;
+  /**
+   * Main search function - calls the AI search endpoint
+   * If append=true, it adds the results to the existing list (for pagination)
+   */
+  const doSearch = async (searchQuery: string, pageNum = 1, append = false) => {
+    if (!searchQuery.trim()) return;
 
+    // reset state for a new search
     if (!append) {
       setLoading(true);
       setPosts([]);
       setMeta({});
-      setError(null);
+      setError("");
       setSearched(true);
-      activeQuery.current = q;
+      activeQuery.current = searchQuery;
     } else {
       setLoadingMore(true);
     }
 
     try {
-      const data = await searchPostsAi(q, pageNum);
-      const newPosts = data.posts;
+      const data = await searchPostsAi(searchQuery, pageNum);
 
+      // either append to existing posts or set new ones
       if (append) {
-        setPosts((prev) => [...prev, ...newPosts]);
+        setPosts((prev) => [...prev, ...data.posts]);
       } else {
-        setPosts(newPosts);
+        setPosts(data.posts);
       }
 
       setPage(data.page);
@@ -94,54 +119,65 @@ const Search: React.FC = () => {
       setTotal(data.total);
       setSource(data.source);
 
-      const newMeta = await fetchMeta(newPosts);
-      setMeta((prev) => (append ? { ...prev, ...newMeta } : newMeta));
+      // fetch likes/comments for the new posts
+      const newMeta = await fetchMeta(data.posts);
+      if (append) {
+        setMeta((prev) => ({ ...prev, ...newMeta }));
+      } else {
+        setMeta(newMeta);
+      }
     } catch (err: any) {
-      const message =
-        err?.response?.data || err?.message || "Something went wrong";
-      setError(typeof message === "string" ? message : "Search failed");
+      const msg = err?.response?.data || err?.message || "Something went wrong";
+      setError(typeof msg === "string" ? msg : "Search failed");
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   };
 
+  // form submit handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     doSearch(query, 1);
   };
 
-  const handleSuggestion = (suggestion: string) => {
-    setQuery(suggestion);
-    doSearch(suggestion, 1);
+  // when user clicks a suggestion chip
+  const handleSuggestion = (text: string) => {
+    setQuery(text);
+    doSearch(text, 1);
   };
 
-  const loadMore = useCallback(async () => {
+  // load the next page of results
+  const loadMore = useCallback(() => {
     if (loadingMore || !hasMore) return;
     doSearch(activeQuery.current, page + 1, true);
   }, [page, loadingMore, hasMore]);
 
+  // infinite scroll: when the sentinel div becomes visible, load more
   const sentinelRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (observerRef.current) observerRef.current.disconnect();
       if (!node) return;
+
       observerRef.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && hasMore && !loadingMore) {
             loadMore();
           }
         },
-        { rootMargin: "200px" }
+        { rootMargin: "200px" },
       );
       observerRef.current.observe(node);
     },
-    [hasMore, loadingMore, loadMore]
+    [hasMore, loadingMore, loadMore],
   );
 
+  // open/close the comments sidebar
   const handleToggleComments = (postId: string) => {
     setSidebarPostId((prev) => (prev === postId ? null : postId));
   };
 
+  // update comment count when a comment is added/deleted in the sidebar
   const handleCommentCountChange = (postId: string, delta: number) => {
     setMeta((prev) => ({
       ...prev,
@@ -152,39 +188,37 @@ const Search: React.FC = () => {
     }));
   };
 
+  // ─── Render ─────────────────────────────────────────────
+
   return (
     <div className="search-page">
-      {/* ── Hero / Search bar ── */}
+
+      {/* Hero section - shows title & suggestions before searching */}
       <div className={`search-hero ${searched ? "compact" : ""}`}>
+
         {!searched && (
           <>
             <div className="search-ai-badge">
-              <span className="ai-sparkle">✦</span> AI-Powered Search
+              <span className="ai-sparkle">✦</span> AI Powered Search
             </div>
             <h1 className="search-title">Ask anything about posts</h1>
             <p className="search-subtitle">
-              Use natural language to find posts — try "most liked posts" or
+              Use natural language to find posts try "most liked posts" or
               "posts about travel from last week"
             </p>
           </>
         )}
 
+        {/* Search bar */}
         <form className="search-form" onSubmit={handleSubmit}>
           <div className="search-input-wrapper">
-            <svg
-              className="search-icon"
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg className="search-icon" viewBox="0 0 24 24" width="20" height="20"
+              fill="none" stroke="currentColor" strokeWidth="2"
+              strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
+
             <input
               ref={inputRef}
               className="search-input"
@@ -193,40 +227,31 @@ const Search: React.FC = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
+
             {query && (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={() => setQuery("")}
-                aria-label="Clear"
-              >
+              <button type="button" className="search-clear-btn"
+                onClick={() => setQuery("")} aria-label="Clear">
                 ×
               </button>
             )}
           </div>
-          <button
-            type="submit"
-            className="search-submit-btn"
-            disabled={!query.trim() || loading}
-          >
+
+          <button type="submit" className="search-submit-btn"
+            disabled={!query.trim() || loading}>
             {loading ? (
               <span className="search-spinner" />
             ) : (
-              <>
-                <span className="ai-sparkle">✦</span> Search
-              </>
+              <><span className="ai-sparkle">✦</span> Search</>
             )}
           </button>
         </form>
 
+        {/* Suggestion chips - only shown before first search */}
         {!searched && (
           <div className="search-suggestions">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                className="search-suggestion-chip"
-                onClick={() => handleSuggestion(s)}
-              >
+            {suggestions.map((s) => (
+              <button key={s} className="search-suggestion-chip"
+                onClick={() => handleSuggestion(s)}>
                 {s}
               </button>
             ))}
@@ -234,15 +259,14 @@ const Search: React.FC = () => {
         )}
       </div>
 
-      {/* ── Results ── */}
+      {/* Results section - only shown after searching */}
       {searched && (
         <div className="search-results">
-          {/* Result info bar */}
+
+          {/* How many results + source badge */}
           {!loading && !error && posts.length > 0 && (
             <div className="search-results-info">
-              <span>
-                {total} result{total !== 1 ? "s" : ""}
-              </span>
+              <span>{total} result{total !== 1 ? "s" : ""}</span>
               {source && (
                 <span className={`search-source-badge ${source}`}>
                   {source === "llm" ? "✦ AI ranked" : "Text match"}
@@ -251,14 +275,14 @@ const Search: React.FC = () => {
             </div>
           )}
 
-          {/* Error */}
+          {/* Error message */}
           {error && (
             <div className="search-error">
               <p>{error}</p>
             </div>
           )}
 
-          {/* Loading skeleton */}
+          {/* Loading skeleton (placeholder cards) */}
           {loading && (
             <div className="search-skeleton-list">
               {[1, 2, 3].map((i) => (
@@ -279,7 +303,7 @@ const Search: React.FC = () => {
             </div>
           )}
 
-          {/* No results */}
+          {/* Empty state */}
           {!loading && !error && posts.length === 0 && (
             <div className="search-empty">
               <div className="search-empty-icon">🔍</div>
@@ -288,7 +312,7 @@ const Search: React.FC = () => {
             </div>
           )}
 
-          {/* Post cards */}
+          {/* Post cards list */}
           {!loading && posts.length > 0 && (
             <div className="search-posts-list">
               {posts.map((post) => (
@@ -302,6 +326,7 @@ const Search: React.FC = () => {
                 />
               ))}
 
+              {/* Sentinel div for infinite scroll */}
               {hasMore && (
                 <div ref={sentinelRef} className="search-loading-more">
                   {loadingMore && "Loading more…"}
@@ -323,6 +348,6 @@ const Search: React.FC = () => {
       )}
     </div>
   );
-};
+}
 
 export default Search;
