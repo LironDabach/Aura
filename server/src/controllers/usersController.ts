@@ -18,7 +18,7 @@ const toSafeUserObject = (user: any) => {
   return userObj;
 };
 
-const allowedFields = ["username", "email", "password", "profilePicture"];
+const allowedFields = ["username", "email", "password", "profilePicture", "removeProfilePicture"];
 
 const hasOnlyAllowedFields = (body: any) =>
   Object.keys(body || {}).every((key) => allowedFields.includes(key));
@@ -108,9 +108,17 @@ class UsersController {
         return res.status(400).send("Error: Invalid fields in request");
       }
       const payload = sanitizeUserPayload(req.body);
+
+      // Handle remove profile picture request
+      const shouldRemovePic = req.body.removeProfilePicture === "true" || req.body.removeProfilePicture === true;
+      delete payload.removeProfilePicture;
+
       if (req.file?.filename) {
         payload.profilePicture = buildUploadedFileUrl(req, req.file.filename);
+      } else if (shouldRemovePic) {
+        // Will unset profilePicture below
       }
+
       if (payload.email && !isValidEmail(payload.email)) {
         return res.status(400).send("Error: invalid email");
       }
@@ -120,18 +128,28 @@ class UsersController {
         payload.password = await bcrypt.hash(payload.password, salt);
       }
 
-      const updated = await User.findByIdAndUpdate(userId, payload, {
-        new: true,
-      });
+      let updated;
+      if (shouldRemovePic && !req.file?.filename) {
+        // Remove profile picture: unset field and apply other updates
+        updated = await User.findByIdAndUpdate(
+          userId,
+          { ...payload, $unset: { profilePicture: 1 } },
+          { new: true }
+        );
+      } else {
+        updated = await User.findByIdAndUpdate(userId, payload, {
+          new: true,
+        });
+      }
 
       if (!updated) {
         return res.status(404).send("Error: User not found");
       }
 
+      // Clean up old profile picture file
       if (
-        req.file?.filename &&
         oldProfilePicture &&
-        oldProfilePicture !== updated.profilePicture
+        (shouldRemovePic || (req.file?.filename && oldProfilePicture !== updated.profilePicture))
       ) {
         await deleteUploadedFileByUrl(oldProfilePicture);
       }
