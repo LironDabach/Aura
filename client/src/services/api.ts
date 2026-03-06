@@ -1,8 +1,9 @@
 import axios from "axios";
 
+// Axios instance with base URL for all API calls
 const api = axios.create({ baseURL: "http://localhost:3000" });
 
-// Attach JWT token to every request
+// Attach the JWT token to every outgoing request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -11,7 +12,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-refresh on 401
+// If we get a 401, try refreshing the token automatically
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -38,9 +39,9 @@ api.interceptors.response.use(
   }
 );
 
-export type AuthTokens = { token: string; refreshToken: string };
+type AuthTokens = { token: string; refreshToken: string };
 
-export type GoogleAuthResponse = AuthTokens & {
+type GoogleAuthResponse = AuthTokens & {
   user: {
     _id: string;
     username: string;
@@ -69,8 +70,7 @@ export const logout = async (): Promise<void> => {
   if (refreshToken) {
     try {
       await api.post("/api/auth/logout", { refreshToken });
-    } catch (err) {
-      // Ignore errors on logout
+    } catch {
     }
   }
   localStorage.removeItem("token");

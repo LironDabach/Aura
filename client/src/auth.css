@@ -1,4 +1,3 @@
-/* Shared auth styles for Login/Register layout */
 :root {
   --left-start: #9be7ff;
   --left-end: #007bff;
@@ -45,11 +44,9 @@
 .right-panel {
   display: flex;
   align-items: center;
-  /* push card toward the left edge of the right panel so it appears on the
-     right side of overall viewport */
   justify-content: flex-start;
   background: #f6f8fb;
-  padding: 40px 80px; /* larger left padding to position card inward */
+  padding: 40px 80px;
   min-height: 100vh;
 }
 

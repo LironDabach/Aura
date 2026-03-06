@@ -1,11 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type FormEvent } from "react";
 import type { Comment } from "../types/post";
-import {
-  getCommentsForPost,
-  addComment,
-  deleteComment,
-  updateComment,
-} from "../services/posts";
+import { getCommentsForPost, addComment, deleteComment, updateComment } from "../services/posts";
 import "../styles/comments-sidebar.css";
 import sendIcon from "../assets/send_icon.svg";
 
@@ -16,12 +11,8 @@ type Props = {
   onCommentCountChange?: (postId: string, delta: number) => void;
 };
 
-const CommentsSidebar: React.FC<Props> = ({
-  postId,
-  open,
-  onClose,
-  onCommentCountChange,
-}) => {
+// Slide-in sidebar for viewing and managing comments on a post
+function CommentsSidebar({ postId, open, onClose, onCommentCountChange }: Props) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [newText, setNewText] = useState("");
@@ -35,7 +26,6 @@ const CommentsSidebar: React.FC<Props> = ({
     return raw ? JSON.parse(raw)?._id : null;
   })();
 
-  // Fetch comments when sidebar opens
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -45,7 +35,6 @@ const CommentsSidebar: React.FC<Props> = ({
       .finally(() => setLoading(false));
   }, [open, postId]);
 
-  // Scroll to bottom when new comment is added
   const scrollToBottom = () => {
     setTimeout(() => {
       if (listRef.current) {
@@ -54,7 +43,7 @@ const CommentsSidebar: React.FC<Props> = ({
     }, 50);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const text = newText.trim();
     if (!text || submitting) return;
@@ -114,6 +103,11 @@ const CommentsSidebar: React.FC<Props> = ({
     return "unknown";
   };
 
+  const getCommentAvatar = (comment: Comment) => {
+    if (typeof comment.userID === "object") return comment.userID.profilePicture;
+    return undefined;
+  };
+
   const getCommentUserId = (comment: Comment) => {
     if (typeof comment.userID === "object") return comment.userID._id;
     return comment.userID;
@@ -124,13 +118,11 @@ const CommentsSidebar: React.FC<Props> = ({
 
   return (
     <>
-      {/* Overlay */}
       <div
         className={`sidebar-overlay ${open ? "visible" : ""}`}
         onClick={onClose}
       />
 
-      {/* Sidebar panel */}
       <aside className={`comments-sidebar ${open ? "open" : ""}`}>
         <header className="comments-sidebar-header">
           <h3>Comments</h3>
@@ -146,7 +138,6 @@ const CommentsSidebar: React.FC<Props> = ({
           </button>
         </header>
 
-        {/* Comments list */}
         <div className="comments-sidebar-list" ref={listRef}>
           {loading ? (
             <p className="comments-sidebar-empty">Loading…</p>
@@ -158,9 +149,17 @@ const CommentsSidebar: React.FC<Props> = ({
             comments.map((c) => (
               <div key={c._id} className="comment-item">
                 <div className="comment-item-header">
-                  <span className="comment-avatar">
-                    {getCommentUsername(c).charAt(0).toUpperCase()}
-                  </span>
+                  {getCommentAvatar(c) ? (
+                    <img
+                      className="comment-avatar"
+                      src={getCommentAvatar(c)}
+                      alt={getCommentUsername(c)}
+                    />
+                  ) : (
+                    <span className="comment-avatar">
+                      {getCommentUsername(c).charAt(0).toUpperCase()}
+                    </span>
+                  )}
                   <div className="comment-meta">
                     <span className="comment-username">
                       {getCommentUsername(c)}
@@ -256,7 +255,6 @@ const CommentsSidebar: React.FC<Props> = ({
           )}
         </div>
 
-        {/* New comment form */}
         <form className="comments-sidebar-form" onSubmit={handleSubmit}>
           <input
             className="comments-sidebar-input"
@@ -277,6 +275,6 @@ const CommentsSidebar: React.FC<Props> = ({
       </aside>
     </>
   );
-};
+}
 
 export default CommentsSidebar;

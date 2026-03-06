@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { register, googleLogin } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import "../auth.css";
 import logo from "../assets/logo.svg";
 
-const Register: React.FC = () => {
+// Registration page with Google OAuth option
+function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,7 +14,7 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     
@@ -100,6 +101,6 @@ const Register: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Register;

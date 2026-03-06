@@ -2,13 +2,12 @@ import api from "./api";
 import type { Post, Like, Comment } from "../types/post";
 import type { User } from "../types/user";
 
-// ── Users ──
-
 export const getUserById = async (userId: string): Promise<User> => {
   const res = await api.get(`/api/user/${userId}`);
   return res.data;
 };
 
+// Update user profile (username, avatar, remove avatar)
 export const updateUser = async (
   userId: string,
   data: { username?: string; profilePicture?: File; removeProfilePicture?: boolean }
@@ -23,6 +22,7 @@ export const updateUser = async (
   return res.data;
 };
 
+// Update a post's title, body, or image
 export const updatePost = async (
   postId: string,
   data: { title?: string; body?: string; image?: File }
@@ -41,24 +41,18 @@ export const deletePost = async (postId: string): Promise<void> => {
   await api.delete(`/api/post/${postId}`);
 };
 
-// ── Posts ──
-
-export type PaginatedPosts = {
+type PaginatedPosts = {
   posts: Post[];
   page: number;
   totalPages: number;
   total: number;
 };
 
+// Get posts with pagination
 export const getPosts = async (page = 1, limit?: number): Promise<PaginatedPosts> => {
   const params: Record<string, number> = { page };
   if (limit) params.limit = limit;
   const res = await api.get("/api/post", { params });
-  return res.data;
-};
-
-export const getPostById = async (id: string): Promise<Post> => {
-  const res = await api.get(`/api/post/${id}`);
   return res.data;
 };
 
@@ -67,8 +61,8 @@ export const getPostsByUser = async (userId: string): Promise<Post[]> => {
   return res.data;
 };
 
+// Create a post (with image upload)
 export const createPost = async (data: { title: string; body: string; imageUrl?: string; image?: File }): Promise<Post> => {
-  // If image file is provided, send as multipart/form-data
   if (data.image) {
     const formData = new FormData();
     formData.append("title", data.title);
@@ -79,12 +73,9 @@ export const createPost = async (data: { title: string; body: string; imageUrl?:
     });
     return res.data;
   }
-  // Otherwise send JSON with imageUrl
   const res = await api.post("/api/post", { title: data.title, body: data.body, imageUrl: data.imageUrl });
   return res.data;
 };
-
-// ── Likes ──
 
 export const getLikesForPost = async (postId: string): Promise<Like[]> => {
   const res = await api.get(`/api/like/post/${postId}`);
@@ -99,8 +90,6 @@ export const likePost = async (postId: string): Promise<Like> => {
 export const unlikePost = async (postId: string): Promise<void> => {
   await api.delete(`/api/like/post/${postId}`);
 };
-
-// ── Comments ──
 
 export const getCommentsForPost = async (postId: string): Promise<Comment[]> => {
   const res = await api.get(`/api/comment/post/${postId}`);
@@ -128,10 +117,9 @@ export const deleteComment = async (
   await api.delete(`/api/comment/post/${postId}/${commentId}`);
 };
 
-// ── AI Search ──
+type AiSearchResult = PaginatedPosts & { source: "llm" | "fallback" };
 
-export type AiSearchResult = PaginatedPosts & { source: "llm" | "fallback" };
-
+// Search posts with AI (falls back to text match)
 export const searchPostsAi = async (
   query: string,
   page = 1,

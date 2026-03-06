@@ -1,10 +1,11 @@
-import React from "react";
+import { type ReactNode } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../services/api";
 import "../styles/layout.css";
 import logo from "../assets/logo.svg";
 
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// Main layout wrapper — shows the navbar on all pages except login/register
+function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const hideNav = location.pathname === "/login" || location.pathname === "/register";
@@ -18,7 +19,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div>
       {!hideNav && (
         <nav className="navbar">
-          {/* Left: Brand */}
           <Link to="/feed" className="navbar-brand">
             <div
               className="navbar-logo"
@@ -30,11 +30,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 justifyContent: "center",
               }}
             >
-              <img
-                src={logo}
-                alt="aura"
-                style={{ width: 20, height: 20 }}
-              />
+              <img src={logo} alt="aura" style={{ width: 20, height: 20 }} />
             </div>
             <div className="navbar-brand-text">
               <span className="navbar-brand-name">aura</span>
@@ -42,7 +38,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
           </Link>
 
-          {/* Center: Navigation links */}
           <div className="navbar-links">
             <NavLink to="/feed" className={({ isActive }) => isActive ? "active" : ""}>
               Feed
@@ -58,13 +53,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </NavLink>
           </div>
 
-          {/* Right: Logout */}
           <div className="navbar-actions">
-            <button
-              className="navbar-logout-btn"
-              onClick={handleLogout}
-              title="Logout"
-            >
+            <button className="navbar-logout-btn" onClick={handleLogout} title="Logout">
               ⏻
             </button>
           </div>
@@ -73,6 +63,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="page-shell">{children}</div>
     </div>
   );
-};
+}
 
 export default Layout;

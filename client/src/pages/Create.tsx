@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPost } from "../services/posts";
 import "../styles/create.css";
 
-const Create: React.FC = () => {
+// Create a new post with title, body, and image upload
+function Create() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -12,7 +13,7 @@ const Create: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
@@ -24,7 +25,7 @@ const Create: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -102,7 +103,6 @@ const Create: React.FC = () => {
           </label>
         </div>
 
-        {/* Image preview */}
         {imagePreview && (
           <div className="create-preview">
             <span className="create-preview-label">Image preview</span>
@@ -120,6 +120,6 @@ const Create: React.FC = () => {
       </form>
     </div>
   );
-};
+}
 
 export default Create;

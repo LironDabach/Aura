@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type ChangeEvent } from "react";
 import { getUserById, updateUser, getPostsByUser, updatePost, deletePost, getLikesForPost, getCommentsForPost, likePost, unlikePost } from "../services/posts";
 import CommentsSidebar from "../components/CommentsSidebar";
 import type { User } from "../types/user";
@@ -11,21 +11,15 @@ type PostMeta = {
   isLikedByMe: boolean;
 };
 
-const Profile: React.FC = () => {
+// Profile page — shows user info, avatar management, and their posts
+function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Edit username
-  const [editingName, setEditingName] = useState(false);
-  const [newUsername, setNewUsername] = useState("");
-  const [savingName, setSavingName] = useState(false);
-
-  // Edit profile picture
   const [savingPic, setSavingPic] = useState(false);
   const picInputRef = useRef<HTMLInputElement>(null);
 
-  // Edit post
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
@@ -36,6 +30,7 @@ const Profile: React.FC = () => {
   const [error, setError] = useState("");
   const [meta, setMeta] = useState<Record<string, PostMeta>>({});
   const [sidebarPostId, setSidebarPostId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const currentUserId = (() => {
     const raw = localStorage.getItem("user");
@@ -52,9 +47,7 @@ const Profile: React.FC = () => {
         ]);
         setUser(userData);
         setPosts(userPosts);
-        setNewUsername(userData.username);
 
-        // Fetch meta (likes/comments) for each post
         const metaEntries = await Promise.all(
           userPosts.map(async (p: Post) => {
             const [likes, comments] = await Promise.all([
@@ -79,31 +72,7 @@ const Profile: React.FC = () => {
     fetchData();
   }, [currentUserId]);
 
-  // ── Save username ──
-  const handleSaveUsername = async () => {
-    if (!user || !newUsername.trim() || newUsername.trim() === user.username) {
-      setEditingName(false);
-      return;
-    }
-    setSavingName(true);
-    setError("");
-    try {
-      const updated = await updateUser(user._id, { username: newUsername.trim() });
-      setUser(updated);
-      // Update localStorage
-      const stored = JSON.parse(localStorage.getItem("user") || "{}");
-      stored.username = updated.username;
-      localStorage.setItem("user", JSON.stringify(stored));
-      setEditingName(false);
-    } catch (err: any) {
-      setError(err.response?.data || "Failed to update username.");
-    } finally {
-      setSavingName(false);
-    }
-  };
-
-  // ── Change profile picture ──
-  const handlePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePicChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     setSavingPic(true);
@@ -121,7 +90,6 @@ const Profile: React.FC = () => {
     }
   };
 
-  // ── Remove profile picture ──
   const handleRemovePic = async () => {
     if (!user) return;
     setSavingPic(true);
@@ -139,7 +107,6 @@ const Profile: React.FC = () => {
     }
   };
 
-  // ── Edit post ──
   const handleEditPostStart = (post: Post) => {
     setEditingPostId(post._id);
     setEditTitle(post.title);
@@ -148,7 +115,7 @@ const Profile: React.FC = () => {
     setEditImagePreview(post.imageUrl || null);
   };
 
-  const handleEditPostImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditPostImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setEditImage(file);
@@ -177,13 +144,15 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleDeletePost = async (postId: string) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
+  const handleDeletePost = async () => {
+    if (!confirmDeleteId) return;
     try {
-      await deletePost(postId);
-      setPosts((prev) => prev.filter((p) => p._id !== postId));
+      await deletePost(confirmDeleteId);
+      setPosts((prev) => prev.filter((p) => p._id !== confirmDeleteId));
     } catch (err: any) {
       setError(err.response?.data || "Failed to delete post.");
+    } finally {
+      setConfirmDeleteId(null);
     }
   };
 
@@ -231,7 +200,6 @@ const Profile: React.FC = () => {
     <div className="profile-page">
       {error && <div className="profile-error">{error}</div>}
 
-      {/* ── Profile Header ── */}
       <div className="profile-header">
         <div className="profile-avatar-section">
           <div className="profile-avatar-wrapper" onClick={() => picInputRef.current?.click()}>
@@ -274,7 +242,6 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
-      {/* ── My Posts ── */}
       <h3 className="profile-section-title">My Posts ({posts.length})</h3>
 
       {posts.length === 0 ? (
@@ -284,7 +251,6 @@ const Profile: React.FC = () => {
           {posts.map((post) => (
             <div key={post._id} className="profile-post-card">
               {editingPostId === post._id ? (
-                /* ── Editing mode ── */
                 <div className="profile-post-edit">
                   <input
                     className="profile-post-edit-input"
@@ -318,7 +284,6 @@ const Profile: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                /* ── Display mode ── */
                 <>
                   {post.imageUrl && (
                     <img src={post.imageUrl} alt={post.title} className="profile-post-image" loading="lazy" />
@@ -331,7 +296,6 @@ const Profile: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Like & Comment buttons */}
                   <div className="profile-post-footer">
                     <button
                       className={`profile-post-like-btn ${meta[post._id]?.isLikedByMe ? "liked" : ""}`}
@@ -361,7 +325,7 @@ const Profile: React.FC = () => {
                     <button className="profile-post-action-btn edit" onClick={() => handleEditPostStart(post)} title="Edit post">
                       ✎
                     </button>
-                    <button className="profile-post-action-btn delete" onClick={() => handleDeletePost(post._id)} title="Delete post">
+                    <button className="profile-post-action-btn delete" onClick={() => setConfirmDeleteId(post._id)} title="Delete post">
                       ✕
                     </button>
                   </div>
@@ -372,7 +336,6 @@ const Profile: React.FC = () => {
         </div>
       )}
 
-      {/* Comments sidebar */}
       {sidebarPostId && (
         <CommentsSidebar
           postId={sidebarPostId}
@@ -381,8 +344,21 @@ const Profile: React.FC = () => {
           onCommentCountChange={handleCommentCountChange}
         />
       )}
+
+      {confirmDeleteId && (
+        <div className="confirm-overlay" onClick={() => setConfirmDeleteId(null)}>
+          <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
+            <h3 className="confirm-title">Delete Post</h3>
+            <p className="confirm-text">Are you sure you want to delete this post? This cannot be undone.</p>
+            <div className="confirm-buttons">
+              <button className="confirm-btn cancel" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+              <button className="confirm-btn delete" onClick={handleDeletePost}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default Profile;

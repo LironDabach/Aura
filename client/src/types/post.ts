@@ -17,7 +17,7 @@ export type Like = {
 export type Comment = {
   _id: string;
   postID: string;
-  userID: string | { _id: string; username: string };
+  userID: string | { _id: string; username: string; profilePicture?: string };
   content: string;
   date: string;
 };
