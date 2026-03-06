@@ -1,6 +1,5 @@
-
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import React from "react";
+import type { ReactElement } from "react";
 import "./App.css";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,10 +10,11 @@ import Search from "./pages/Search";
 import NotFound from "./components/NotFound";
 import Layout from "./components/Layout";
 
+// Main app router — wraps protected routes with auth check
 function App() {
-
   const location = useLocation();
-  const RequireAuth = ({ children }: { children: React.ReactElement }) => {
+
+  const RequireAuth = ({ children }: { children: ReactElement }) => {
     const isAuth = Boolean(localStorage.getItem("token"));
     if (!isAuth) {
       return <Navigate to="/login" state={{ from: location }} replace />;

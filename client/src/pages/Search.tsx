@@ -1,11 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type FormEvent } from "react";
 import PostCard from "../components/PostCard";
 import CommentsSidebar from "../components/CommentsSidebar";
 import { searchPostsAi, getLikesForPost, getCommentsForPost } from "../services/posts";
 import type { Post } from "../types/post";
 import "../styles/search.css";
 
-// suggestions that appear before the user searches
 const suggestions = [
   "Show me the most liked posts",
   "Posts about technology",
@@ -13,47 +12,36 @@ const suggestions = [
   "Posts mentioning travel",
 ];
 
+// AI search page with suggestion chips and infinite scroll results
 function Search() {
-  // search input & results
   const [query, setQuery] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
 
-  // pagination
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [total, setTotal] = useState(0);
-
-  // tells us if the results came from the AI or from regex fallback
   const [source, setSource] = useState<"llm" | "fallback" | null>(null);
 
-  // likes & comments count for each post
   const [meta, setMeta] = useState<Record<string, {
     likeCount: number;
     commentCount: number;
     isLikedByMe: boolean;
-  }>>({});
+  }>>({}); 
 
-  // which post's comments sidebar is open (null = closed)
   const [sidebarPostId, setSidebarPostId] = useState<string | null>(null);
 
-  // refs
   const inputRef = useRef<HTMLInputElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const activeQuery = useRef(""); // keeps track of the current query for pagination
+  const activeQuery = useRef("");
 
-  // auto-focus the search input on page load
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  /**
-   * For each post, fetch its likes and comments from the server
-   * and figure out if the current user already liked it
-   */
   const fetchMeta = async (postsToFetch: Post[]) => {
     const userRaw = localStorage.getItem("user");
     const currentUserId = userRaw ? JSON.parse(userRaw)?._id : null;
@@ -77,7 +65,6 @@ function Search() {
           isLikedByMe: didILike,
         };
       } catch {
-        // if fetching meta fails for a post, just use zeros
         results[post._id] = { likeCount: 0, commentCount: 0, isLikedByMe: false };
       }
     }
@@ -85,14 +72,10 @@ function Search() {
     return results;
   };
 
-  /**
-   * Main search function - calls the AI search endpoint
-   * If append=true, it adds the results to the existing list (for pagination)
-   */
+  // Performs the actual search request to the API
   const doSearch = async (searchQuery: string, pageNum = 1, append = false) => {
     if (!searchQuery.trim()) return;
 
-    // reset state for a new search
     if (!append) {
       setLoading(true);
       setPosts([]);
@@ -107,7 +90,6 @@ function Search() {
     try {
       const data = await searchPostsAi(searchQuery, pageNum);
 
-      // either append to existing posts or set new ones
       if (append) {
         setPosts((prev) => [...prev, ...data.posts]);
       } else {
@@ -119,7 +101,6 @@ function Search() {
       setTotal(data.total);
       setSource(data.source);
 
-      // fetch likes/comments for the new posts
       const newMeta = await fetchMeta(data.posts);
       if (append) {
         setMeta((prev) => ({ ...prev, ...newMeta }));
@@ -135,25 +116,21 @@ function Search() {
     }
   };
 
-  // form submit handler
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     doSearch(query, 1);
   };
 
-  // when user clicks a suggestion chip
   const handleSuggestion = (text: string) => {
     setQuery(text);
     doSearch(text, 1);
   };
 
-  // load the next page of results
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore) return;
     doSearch(activeQuery.current, page + 1, true);
   }, [page, loadingMore, hasMore]);
 
-  // infinite scroll: when the sentinel div becomes visible, load more
   const sentinelRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (observerRef.current) observerRef.current.disconnect();
@@ -172,12 +149,10 @@ function Search() {
     [hasMore, loadingMore, loadMore],
   );
 
-  // open/close the comments sidebar
   const handleToggleComments = (postId: string) => {
     setSidebarPostId((prev) => (prev === postId ? null : postId));
   };
 
-  // update comment count when a comment is added/deleted in the sidebar
   const handleCommentCountChange = (postId: string, delta: number) => {
     setMeta((prev) => ({
       ...prev,
@@ -188,12 +163,8 @@ function Search() {
     }));
   };
 
-  // ─── Render ─────────────────────────────────────────────
-
   return (
     <div className="search-page">
-
-      {/* Hero section - shows title & suggestions before searching */}
       <div className={`search-hero ${searched ? "compact" : ""}`}>
 
         {!searched && (
@@ -209,7 +180,6 @@ function Search() {
           </>
         )}
 
-        {/* Search bar */}
         <form className="search-form" onSubmit={handleSubmit}>
           <div className="search-input-wrapper">
             <svg className="search-icon" viewBox="0 0 24 24" width="20" height="20"
@@ -246,7 +216,6 @@ function Search() {
           </button>
         </form>
 
-        {/* Suggestion chips - only shown before first search */}
         {!searched && (
           <div className="search-suggestions">
             {suggestions.map((s) => (
@@ -259,11 +228,9 @@ function Search() {
         )}
       </div>
 
-      {/* Results section - only shown after searching */}
       {searched && (
         <div className="search-results">
 
-          {/* How many results + source badge */}
           {!loading && !error && posts.length > 0 && (
             <div className="search-results-info">
               <span>{total} result{total !== 1 ? "s" : ""}</span>
@@ -275,14 +242,12 @@ function Search() {
             </div>
           )}
 
-          {/* Error message */}
           {error && (
             <div className="search-error">
               <p>{error}</p>
             </div>
           )}
 
-          {/* Loading skeleton (placeholder cards) */}
           {loading && (
             <div className="search-skeleton-list">
               {[1, 2, 3].map((i) => (
@@ -303,7 +268,6 @@ function Search() {
             </div>
           )}
 
-          {/* Empty state */}
           {!loading && !error && posts.length === 0 && (
             <div className="search-empty">
               <div className="search-empty-icon">🔍</div>
@@ -312,7 +276,6 @@ function Search() {
             </div>
           )}
 
-          {/* Post cards list */}
           {!loading && posts.length > 0 && (
             <div className="search-posts-list">
               {posts.map((post) => (
@@ -326,7 +289,6 @@ function Search() {
                 />
               ))}
 
-              {/* Sentinel div for infinite scroll */}
               {hasMore && (
                 <div ref={sentinelRef} className="search-loading-more">
                   {loadingMore && "Loading more…"}
@@ -337,7 +299,6 @@ function Search() {
         </div>
       )}
 
-      {/* Comments sidebar */}
       {sidebarPostId && (
         <CommentsSidebar
           postId={sidebarPostId}

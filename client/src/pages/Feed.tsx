@@ -1,11 +1,7 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import PostCard from "../components/PostCard";
 import CommentsSidebar from "../components/CommentsSidebar";
-import {
-  getPosts,
-  getLikesForPost,
-  getCommentsForPost,
-} from "../services/posts";
+import { getPosts, getLikesForPost, getCommentsForPost } from "../services/posts";
 import type { Post } from "../types/post";
 import "../styles/feed.css";
 
@@ -15,7 +11,7 @@ type PostMeta = {
   isLikedByMe: boolean;
 };
 
-const Feed: React.FC = () => {
+function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [meta, setMeta] = useState<Record<string, PostMeta>>({});
   const [loading, setLoading] = useState(true);
@@ -25,6 +21,7 @@ const Feed: React.FC = () => {
   const [sidebarPostId, setSidebarPostId] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // Fetch like/comment counts for a list of posts
   const fetchMeta = async (newPosts: Post[]) => {
     const userRaw = localStorage.getItem("user");
     const currentUserId = userRaw ? JSON.parse(userRaw)?._id : null;
@@ -47,7 +44,6 @@ const Feed: React.FC = () => {
     return Object.fromEntries(metaEntries);
   };
 
-  // Initial load
   useEffect(() => {
     const fetchFeed = async () => {
       try {
@@ -65,7 +61,6 @@ const Feed: React.FC = () => {
     fetchFeed();
   }, []);
 
-  // Load next page
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
@@ -84,7 +79,7 @@ const Feed: React.FC = () => {
     }
   }, [page, loadingMore, hasMore]);
 
-  // Sentinel ref for infinite scroll
+  // Infinite scroll observer — triggers loadMore when sentinel is visible
   const sentinelRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (observerRef.current) observerRef.current.disconnect();
@@ -141,14 +136,12 @@ const Feed: React.FC = () => {
         />
       ))}
 
-      {/* Sentinel element for infinite scroll */}
       {hasMore && (
         <div ref={sentinelRef} className="feed-loading-more">
-          {loadingMore && "Loading more…"}
+          {loadingMore && "Loading more\u2026"}
         </div>
       )}
 
-      {/* Comments sidebar */}
       {sidebarPostId && (
         <CommentsSidebar
           postId={sidebarPostId}
@@ -159,6 +152,6 @@ const Feed: React.FC = () => {
       )}
     </div>
   );
-};
+}
 
 export default Feed;

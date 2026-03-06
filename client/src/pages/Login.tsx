@@ -1,19 +1,19 @@
-import React, { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { login, googleLogin } from "../services/api";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import "../auth.css";
 import logo from "../assets/logo.svg";
 
-const Login: React.FC = () => {
+// Login page with username/password and Google OAuth
+function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -91,6 +91,6 @@ const Login: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Login;

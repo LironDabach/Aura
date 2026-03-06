@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { Post } from "../types/post";
 import { likePost, unlikePost } from "../services/posts";
 
@@ -10,34 +10,27 @@ type PostCardProps = {
   onToggleComments?: () => void;
 };
 
-const PostCard: React.FC<PostCardProps> = ({
+// Single post card with like/comment buttons
+function PostCard({
   post,
   likeCount: initialLikeCount,
   commentCount,
   isLikedByMe: initialIsLiked,
   onToggleComments,
-}) => {
+}: PostCardProps) {
   const [liked, setLiked] = useState(initialIsLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [animating, setAnimating] = useState(false);
 
-  const sender =
-    typeof post.senderID === "object" ? post.senderID : null;
+  const sender = typeof post.senderID === "object" ? post.senderID : null;
   const username = sender?.username ?? "unknown";
   const avatar = sender?.profilePicture;
 
   const postDate = new Date(post.date);
   const formattedDate =
-    postDate.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }) +
+    postDate.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }) +
     " · " +
-    postDate.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    postDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
   const handleLike = async () => {
     setAnimating(true);
@@ -60,7 +53,6 @@ const PostCard: React.FC<PostCardProps> = ({
 
   return (
     <article className="post-card">
-      {/* ── Header ── */}
       <header className="post-card-header">
         <div className="post-card-avatar">
           {avatar ? (
@@ -77,21 +69,14 @@ const PostCard: React.FC<PostCardProps> = ({
         </div>
       </header>
 
-      {/* ── Body ── */}
       <div className="post-card-body">
         {post.imageUrl && (
-          <img
-            className="post-card-image"
-            src={post.imageUrl}
-            alt={post.title}
-            loading="lazy"
-          />
+          <img className="post-card-image" src={post.imageUrl} alt={post.title} loading="lazy" />
         )}
         {post.title && <h3 className="post-card-title">{post.title}</h3>}
         {post.body && <p className="post-card-text">{post.body}</p>}
       </div>
 
-      {/* ── Footer ── */}
       <footer className="post-card-footer">
         <button
           className={`post-card-like-btn ${liked ? "liked" : ""} ${animating ? "pop" : ""}`}
@@ -129,22 +114,9 @@ const PostCard: React.FC<PostCardProps> = ({
           <span className="post-card-count">{likeCount}</span>
         </button>
 
-        <button
-          className="post-card-comment-btn"
-          onClick={onToggleComments}
-          aria-label="Comments"
-        >
-          <svg
-            className="post-card-comment-icon"
-            viewBox="0 0 24 24"
-            width="22"
-            height="22"
-            fill="none"
-            stroke="#9ca3af"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+        <button className="post-card-comment-btn" onClick={onToggleComments} aria-label="Comments">
+          <svg className="post-card-comment-icon" viewBox="0 0 24 24" width="22" height="22"
+            fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
           <span className="post-card-count">{commentCount}</span>
@@ -152,6 +124,6 @@ const PostCard: React.FC<PostCardProps> = ({
       </footer>
     </article>
   );
-};
+}
 
 export default PostCard;
