@@ -3,6 +3,7 @@ import { getUserById, updateUser, getPostsByUser, updatePost, deletePost, getLik
 import CommentsSidebar from "../components/CommentsSidebar";
 import type { User } from "../types/user";
 import type { Post } from "../types/post";
+import { getCurrentUserId } from "../services/auth";
 import "../styles/profile.css";
 
 type PostMeta = {
@@ -32,18 +33,18 @@ function Profile() {
   const [sidebarPostId, setSidebarPostId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const currentUserId = (() => {
-    const raw = localStorage.getItem("user");
-    return raw ? JSON.parse(raw)?._id : null;
-  })();
+  const currentUserId = getCurrentUserId();
 
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+      setLoading(false);
+      return;
+    }
     const fetchData = async () => {
       try {
         const [userData, userPosts] = await Promise.all([
           getUserById(currentUserId),
-          getPostsByUser(currentUserId),
+          getPostsByUser(currentUserId).catch(() => []),
         ]);
         setUser(userData);
         setPosts(userPosts);

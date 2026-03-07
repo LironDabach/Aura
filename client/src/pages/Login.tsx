@@ -18,9 +18,10 @@ function Login() {
     setError(null);
     setLoading(true);
     try {
-      const tokens = await login({ username, password });
-      localStorage.setItem("token", tokens.token);
-      localStorage.setItem("refreshToken", tokens.refreshToken);
+      const response = await login({ username, password });
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("refreshToken", response.refreshToken);
+      localStorage.setItem("user", JSON.stringify(response.user));
       navigate("/feed");
     } catch (err: any) {
       setError(err?.response?.data?.message || "Login failed");

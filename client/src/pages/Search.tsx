@@ -3,6 +3,7 @@ import PostCard from "../components/PostCard";
 import CommentsSidebar from "../components/CommentsSidebar";
 import { searchPostsAi, getLikesForPost, getCommentsForPost } from "../services/posts";
 import type { Post } from "../types/post";
+import { getCurrentUserId } from "../services/auth";
 import "../styles/search.css";
 
 const suggestions = [
@@ -43,8 +44,7 @@ function Search() {
   }, []);
 
   const fetchMeta = async (postsToFetch: Post[]) => {
-    const userRaw = localStorage.getItem("user");
-    const currentUserId = userRaw ? JSON.parse(userRaw)?._id : null;
+    const currentUserId = getCurrentUserId();
 
     const results: Record<string, { likeCount: number; commentCount: number; isLikedByMe: boolean }> = {};
 

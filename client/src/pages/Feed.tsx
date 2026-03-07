@@ -3,6 +3,7 @@ import PostCard from "../components/PostCard";
 import CommentsSidebar from "../components/CommentsSidebar";
 import { getPosts, getLikesForPost, getCommentsForPost } from "../services/posts";
 import type { Post } from "../types/post";
+import { getCurrentUserId } from "../services/auth";
 import "../styles/feed.css";
 
 type PostMeta = {
@@ -23,8 +24,7 @@ function Feed() {
 
   // Fetch like/comment counts for a list of posts
   const fetchMeta = async (newPosts: Post[]) => {
-    const userRaw = localStorage.getItem("user");
-    const currentUserId = userRaw ? JSON.parse(userRaw)?._id : null;
+    const currentUserId = getCurrentUserId();
 
     const metaEntries = await Promise.all(
       newPosts.map(async (p) => {

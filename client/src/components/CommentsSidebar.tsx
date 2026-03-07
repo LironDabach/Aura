@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, type FormEvent } from "react";
 import type { Comment } from "../types/post";
 import { getCommentsForPost, addComment, deleteComment, updateComment } from "../services/posts";
+import { getCurrentUserId } from "../services/auth";
 import "../styles/comments-sidebar.css";
 import sendIcon from "../assets/send_icon.svg";
 
@@ -21,10 +22,7 @@ function CommentsSidebar({ postId, open, onClose, onCommentCountChange }: Props)
   const [editText, setEditText] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
 
-  const currentUserId = (() => {
-    const raw = localStorage.getItem("user");
-    return raw ? JSON.parse(raw)?._id : null;
-  })();
+  const currentUserId = getCurrentUserId();
 
   useEffect(() => {
     if (!open) return;
