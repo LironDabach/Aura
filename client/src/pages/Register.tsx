@@ -26,8 +26,11 @@ function Register() {
     
     setLoading(true);
     try {
-      await register({ username, email, password });
-      navigate("/login");
+      const response = await register({ username, email, password });
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("refreshToken", response.refreshToken);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      navigate("/feed");
     } catch (err: any) {
       setError(err?.response?.data?.message || "Registration failed");
     } finally {

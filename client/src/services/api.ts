@@ -50,7 +50,7 @@ type GoogleAuthResponse = AuthTokens & {
   };
 };
 
-export const register = async (data: { username: string; email: string; password: string }): Promise<AuthTokens> => {
+export const register = async (data: { username: string; email: string; password: string }): Promise<GoogleAuthResponse> => {
   const res = await api.post("/api/auth/register", data);
   return res.data;
 };

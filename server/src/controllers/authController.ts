@@ -62,7 +62,15 @@ const register = async (req: Request, res: Response) => {
     const tokens = generateToken(user._id.toString());
     user.refreshTokens.push(tokens.refreshToken);
     await user.save();
-    res.status(201).json(tokens);
+    res.status(201).json({
+      ...tokens,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture,
+      },
+    });
   } catch (err) {
     return sendError(500, "Internal server error", res);
   }
