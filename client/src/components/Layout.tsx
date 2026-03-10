@@ -23,8 +23,8 @@ function Layout({ children }: { children: ReactNode }) {
             <div
               className="navbar-logo"
               style={{
-                background: "#111",
-                borderRadius: "50%",
+                background: "#0075FF",
+                borderRadius: "0%",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
