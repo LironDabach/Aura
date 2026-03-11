@@ -1,4 +1,7 @@
+import { loadEnv } from "./config/env";
 import initApp from "./index";
+
+loadEnv();
 
 const port = process.env.PORT;
 

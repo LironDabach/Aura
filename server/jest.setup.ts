@@ -1,9 +1,6 @@
-import dotEnv from "dotenv";
-import path from "path";
+import { loadEnv } from "./src/config/env";
 
-dotEnv.config({ path: path.resolve(__dirname, "../.env.development") });
-
-console.log(process.env.DATABASE_URL);
+loadEnv();
 
 // Apply timeout before any test hooks run.
 jest.setTimeout(30000);

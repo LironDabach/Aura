@@ -296,7 +296,7 @@ describe("Auth API", () => {
     expect(response.body).toHaveProperty("message");
   });
 
-  test("tokens verify with .env.development JWT_SECRET and fail with a wrong secret", () => {
+  test("tokens verify with the active .env JWT_SECRET and fail with a wrong secret", () => {
     expect(usedSecret).toBeTruthy();
 
     const accessPayload = jwt.verify(loginAccessToken, usedSecret) as {

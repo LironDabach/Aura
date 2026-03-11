@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
 // Axios instance with base URL for all API calls
-const api = axios.create({ baseURL: "http://localhost:3000" });
+const api = axios.create({ baseURL });
 
 // Attach the JWT token to every outgoing request
 api.interceptors.request.use((config) => {
@@ -22,7 +24,7 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem("refreshToken");
       if (refreshToken) {
         try {
-          const { data } = await axios.post("http://localhost:3000/api/auth/refresh-token", { refreshToken });
+          const { data } = await axios.post(`${baseURL}/api/auth/refresh-token`, { refreshToken });
           localStorage.setItem("token", data.token);
           localStorage.setItem("refreshToken", data.refreshToken);
           original.headers.Authorization = `Bearer ${data.token}`;

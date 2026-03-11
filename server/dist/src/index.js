@@ -13,6 +13,8 @@ const multerRoute_1 = __importDefault(require("./routes/multerRoute"));
 const usersRoute_1 = __importDefault(require("./routes/usersRoute"));
 const swagger_1 = require("./swagger");
 const path_1 = __importDefault(require("path"));
+const env_1 = require("./config/env");
+(0, env_1.loadEnv)();
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 (0, swagger_1.setupSwagger)(app);

@@ -12,14 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const usersModel_1 = __importDefault(require("./models/usersModel"));
 const postsModel_1 = __importDefault(require("./models/postsModel"));
 const commentsModel_1 = __importDefault(require("./models/commentsModel"));
 const likesModel_1 = __importDefault(require("./models/likesModel"));
-dotenv_1.default.config({ path: "../.env.development" });
+const env_1 = require("./config/env");
+(0, env_1.loadEnv)();
 const SEED_TAG = "SEED_AURA";
 const REQUIRED_USERS = [
     {
@@ -74,6 +74,7 @@ const seed = () => __awaiter(void 0, void 0, void 0, function* () {
             title: `${SEED_TAG} Post ${i + 1}`,
             body: `${SEED_TAG} Body for post ${i + 1}`,
             senderID: userIds[i % userIds.length],
+            imageUrl: `https://picsum.photos/seed/aura-seed-${i + 1}/640/360`,
         }));
         const createdPosts = yield postsModel_1.default.insertMany(postsToCreate);
         const commentsToCreate = Array.from({ length: 20 }, (_, i) => ({

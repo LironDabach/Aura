@@ -164,9 +164,10 @@ describe("SearchService", () => {
 
   test("supports humanized likes/comments constraint query", async () => {
     const senderID = new mongoose.Types.ObjectId();
+    const uniqueKeyword = "signalrichzeta";
     const matchingPost = await postsModel.create({
       title: "ai-search-test-signal-rich",
-      body: "topic free body text",
+      body: `topic free body text ${uniqueKeyword}`,
       senderID,
       imageUrl: "https://example.com/e.png",
       date: new Date(),
@@ -197,7 +198,7 @@ describe("SearchService", () => {
     const service = new SearchService(postsModel, new LlmService());
 
     const result = await service.searchPostsAi(
-      "please search for posts that contains at least 3 likes and comment",
+      `please search for posts that contains at least 3 likes and comment and mention "${uniqueKeyword}"`,
       1,
       10,
     );
@@ -210,9 +211,10 @@ describe("SearchService", () => {
   //implement humanized constraint test for date range (e.g. "posts from the last week") and for keyword presence (e.g. "posts that mention 'hiking' in the body")
   test("supports humanized date range constraint query", async () => {
     const senderID = new mongoose.Types.ObjectId();
+    const uniqueKeyword = "recentzetatag";
     const recentPost = await postsModel.create({
       title: "ai-search-test-recent",
-      body: "topic free body text",
+      body: `topic free body text ${uniqueKeyword}`,
       senderID,
       imageUrl: "https://example.com/g.png",
       date: new Date(),
@@ -229,7 +231,7 @@ describe("SearchService", () => {
     const service = new SearchService(postsModel, new LlmService());
 
     const result = await service.searchPostsAi(
-      "please search for posts from the last week",
+      `please search for posts from the last week that mention "${uniqueKeyword}"`,
       1,
       10,
     );

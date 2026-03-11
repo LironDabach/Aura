@@ -4,8 +4,8 @@
   "description": "Aura is a social media platform that allows users to share their thoughts, ideas, and experiences with others. It provides a space for users to connect, engage, and express themselves through posts, comments, and likes.",
   "main": "index.ts",
   "scripts": {
-    "start": "tsc && node --env-file=../.env.production ./dist/src/server.js",
-    "dev": "nodemon --exec \"node --env-file=../.env.development -r ts-node/register\" ./src/server.ts",
+    "start": "tsc && node --env-file=../.env ./dist/src/server.js",
+    "dev": "nodemon --exec \"node --env-file=../.env -r ts-node/register\" ./src/server.ts",
     "seed": "ts-node ./src/seed.ts",
     "test": "tsc && jest --runInBand --detectOpenHandles --forceExit",
     "testComment": "tsc && jest --runInBand --detectOpenHandles --forceExit ./src/tests/comments.test.ts",

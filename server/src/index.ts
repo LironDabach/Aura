@@ -8,6 +8,9 @@ import multerRoute from "./routes/multerRoute";
 import usersRoute from "./routes/usersRoute";
 import { setupSwagger } from "./swagger";
 import path from "path";
+import { loadEnv } from "./config/env";
+
+loadEnv();
 
 const app = express();
 app.use(express.json());

@@ -38,34 +38,50 @@ Aura is a full-stack social platform where users can register/login, publish pos
 
 ## 🌱 Environment Variables
 
-The project reads env files from the repository root:
-- `.env.development` for local development
-- `.env.production` for production startup
+The project now uses a single repository-root `.env` file.
+Set `NODE_ENV=development` or `NODE_ENV=production`, and the app will select the matching `DEV_...` or `PROD_...` values automatically.
+
+`NODE_ENV` is the only environment switch.
+The npm commands are runtime helpers only:
+- `npm run dev` runs the server in watch mode with `nodemon` and `ts-node`
+- `npm run start` builds TypeScript first and then runs the compiled server
+
+Both commands read the same root `.env`.
+They do not choose development vs production values by themselves.
 
 Recommended variables:
 
 ```env
-# Core
-PORT=3000
-DOMAIN_BASE=localhost
-DATABASE_URL=mongodb://localhost:27017/aura
-MONGO_CONNECT_TIMEOUT_MS=3000
+# Environment selector
+NODE_ENV=development
 
-# Auth
+# Shared values
 JWT_SECRET=replace_me
 JWT_EXPIRES_IN=5000
 REFRESH_TOKEN_EXPIRES_IN=13000
-
-# Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 
-# AI Search (optional in local dev unless using /api/post/search/ai)
+# AI Search
 LLM_BASE_URL=http://your-llm-host
 LLM_USER=your_llm_user
 LLM_PASS=your_llm_password
 LLM_TIMEOUT_MS=15000
 LLM_MODEL=llama3.1:8b
+
+# Development values
+DEV_PORT=3000
+DEV_DOMAIN_BASE=localhost
+DEV_DATABASE_URL=mongodb://localhost:27017/aura
+DEV_MONGO_CONNECT_TIMEOUT_MS=3000
+DEV_VITE_API_BASE_URL=http://localhost:3000
+
+# Production values
+PROD_PORT=4000
+PROD_DOMAIN_BASE=your-production-domain
+PROD_DATABASE_URL=mongodb://your-production-db
+PROD_MONGO_CONNECT_TIMEOUT_MS=3000
+PROD_VITE_API_BASE_URL=https://your-production-domain
 ```
 
 ## 📦 Install
@@ -104,7 +120,7 @@ cd server
 npm run start
 ```
 
-This compiles TypeScript and starts the API with `.env.production`.
+This compiles TypeScript and starts the API with the single root `.env`. The active runtime settings still come from `NODE_ENV`.
 
 ## 🧪 Tests
 

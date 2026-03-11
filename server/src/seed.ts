@@ -1,12 +1,12 @@
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import usersModel from "./models/usersModel";
 import postsModel from "./models/postsModel";
 import commentsModel from "./models/commentsModel";
 import likesModel from "./models/likesModel";
+import { loadEnv } from "./config/env";
 
-dotenv.config({ path: "../.env.development" });
+loadEnv();
 
 const SEED_TAG = "SEED_AURA";
 const REQUIRED_USERS = [

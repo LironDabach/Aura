@@ -119,9 +119,10 @@ describe("Posts AI Search API", () => {
   });
 
   test("GET /api/post/search/ai handles humanized query with likes and comment threshold", async () => {
+    const uniqueKeyword = "apisignalzeta";
     const postWithSignals = await postsModel.create({
       title: "api-search-test-threshold-hit",
-      body: "great travel guide",
+      body: `great travel guide ${uniqueKeyword}`,
       senderID,
       imageUrl: "https://example.com/hit.png",
       date: new Date(),
@@ -152,7 +153,7 @@ describe("Posts AI Search API", () => {
     llmResponseText = "not-json";
 
     const response = await request(app).get(
-      "/api/post/search/ai?q=please%20search%20for%20posts%20that%20contains%20at%20least%203%20likes%20and%20comment",
+      `/api/post/search/ai?q=${encodeURIComponent(`please search for posts that contains at least 3 likes and comment and mention "${uniqueKeyword}"`)}`,
     );
 
     expect(response.status).toBe(200);

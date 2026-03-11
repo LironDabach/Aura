@@ -56,7 +56,12 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const tokens = generateToken(user._id.toString());
         user.refreshTokens.push(tokens.refreshToken);
         yield user.save();
-        res.status(201).json(tokens);
+        res.status(201).json(Object.assign(Object.assign({}, tokens), { user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                profilePicture: user.profilePicture,
+            } }));
     }
     catch (err) {
         return sendError(500, "Internal server error", res);
@@ -84,7 +89,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const tokens = generateToken(user._id.toString());
         user.refreshTokens.push(tokens.refreshToken);
         yield user.save();
-        res.status(200).json(tokens);
+        res.status(200).json(Object.assign(Object.assign({}, tokens), { user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                profilePicture: user.profilePicture,
+            } }));
     }
     catch (err) {
         return sendError(500, "Internal server error", res);

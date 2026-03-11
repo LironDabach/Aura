@@ -22,7 +22,7 @@ const toSafeUserObject = (user) => {
     delete userObj.refreshTokens;
     return userObj;
 };
-const allowedFields = ["username", "email", "password", "profilePicture"];
+const allowedFields = ["username", "email", "password", "profilePicture", "removeProfilePicture"];
 const hasOnlyAllowedFields = (body) => Object.keys(body || {}).every((key) => allowedFields.includes(key));
 const sanitizeUserPayload = (body) => {
     const allowed = allowedFields;
@@ -96,7 +96,7 @@ class UsersController {
     }
     update(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             const userId = req.params.id;
             try {
                 const user = yield usersModel_1.default.findById(userId);
@@ -111,8 +111,14 @@ class UsersController {
                     return res.status(400).send("Error: Invalid fields in request");
                 }
                 const payload = sanitizeUserPayload(req.body);
+                // Handle remove profile picture request
+                const shouldRemovePic = req.body.removeProfilePicture === "true" || req.body.removeProfilePicture === true;
+                delete payload.removeProfilePicture;
                 if ((_a = req.file) === null || _a === void 0 ? void 0 : _a.filename) {
                     payload.profilePicture = (0, uploadMiddleware_1.buildUploadedFileUrl)(req, req.file.filename);
+                }
+                else if (shouldRemovePic) {
+                    // Will unset profilePicture below
                 }
                 if (payload.email && !isValidEmail(payload.email)) {
                     return res.status(400).send("Error: invalid email");
@@ -121,15 +127,22 @@ class UsersController {
                     const salt = yield bcrypt_1.default.genSalt(10);
                     payload.password = yield bcrypt_1.default.hash(payload.password, salt);
                 }
-                const updated = yield usersModel_1.default.findByIdAndUpdate(userId, payload, {
-                    new: true,
-                });
+                let updated;
+                if (shouldRemovePic && !((_b = req.file) === null || _b === void 0 ? void 0 : _b.filename)) {
+                    // Remove profile picture: unset field and apply other updates
+                    updated = yield usersModel_1.default.findByIdAndUpdate(userId, Object.assign(Object.assign({}, payload), { $unset: { profilePicture: 1 } }), { new: true });
+                }
+                else {
+                    updated = yield usersModel_1.default.findByIdAndUpdate(userId, payload, {
+                        new: true,
+                    });
+                }
                 if (!updated) {
                     return res.status(404).send("Error: User not found");
                 }
-                if (((_b = req.file) === null || _b === void 0 ? void 0 : _b.filename) &&
-                    oldProfilePicture &&
-                    oldProfilePicture !== updated.profilePicture) {
+                // Clean up old profile picture file
+                if (oldProfilePicture &&
+                    (shouldRemovePic || (((_c = req.file) === null || _c === void 0 ? void 0 : _c.filename) && oldProfilePicture !== updated.profilePicture))) {
                     yield (0, uploadMiddleware_1.deleteUploadedFileByUrl)(oldProfilePicture);
                 }
                 return res.json(toSafeUserObject(updated));
