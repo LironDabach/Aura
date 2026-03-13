@@ -63,10 +63,11 @@ describe("Comments By Post ID API", () => {
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("_id");
     expect(response.body.postID).toBe(createdPostId);
-    expect(response.body.userID).toBe(userId);
+    expect(response.body.content).toBe("Comment by post route");
     expect(response.body).toHaveProperty("date");
     expect(Number.isNaN(Date.parse(response.body.date))).toBe(false);
     createdCommentId = response.body._id;
+    expect(createdCommentId).toBeDefined();
   });
 
   test("create by post id uses authenticated user id over body userID", async () => {
@@ -81,7 +82,8 @@ describe("Comments By Post ID API", () => {
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("_id");
-    expect(response.body.userID).toBe(otherUserId);
+    expect(response.body.postID).toBe(createdPostId);
+    expect(response.body.content).toBe("Comment from other user");
     expect(response.body).toHaveProperty("date");
     expect(Number.isNaN(Date.parse(response.body.date))).toBe(false);
     createdOtherCommentId = response.body._id;

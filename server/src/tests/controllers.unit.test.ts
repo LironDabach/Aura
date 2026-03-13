@@ -200,13 +200,14 @@ describe("CommentsController unit", () => {
   });
 
   test("updateByPostId succeeds for owner", async () => {
+    const populate = jest.fn().mockResolvedValue({ _id: "c1", content: "ok" });
     const model = {
       findById: jest.fn().mockResolvedValue({
         userID: { toString: () => "u1" },
         postID: { toString: () => "p1" },
         date: new Date("2024-01-01T00:00:00.000Z"),
       }),
-      findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "c1", content: "ok" }),
+      findByIdAndUpdate: jest.fn().mockReturnValue({ populate }),
     };
     (commentsController as any).model = model;
     const req: any = {
@@ -223,6 +224,7 @@ describe("CommentsController unit", () => {
       { content: "ok" },
       { new: true },
     );
+    expect(populate).toHaveBeenCalledWith("userID", "username");
     expect(res.json).toHaveBeenCalledWith({ _id: "c1", content: "ok" });
   });
 
