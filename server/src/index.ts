@@ -26,16 +26,15 @@ app.use("/api/comment", commentsRoute);
 app.use("/api/like", likesRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/user", usersRoute);
-app.use('/api/upload', express.static('public/uploads'));
+app.use("/api/upload", express.static("public/uploads"));
 app.use("/api/upload", multerRoute);
 
-// Serve React static files from dist
+// Serve React static files
 const distPath = path.resolve(process.cwd(), "../client/dist");
 app.use(express.static(distPath));
 
-// 404 handler for all unmatched routes
-app.use((req, res) => {
-  res.status(404).json({ error: "Not Found" });
+app.get("*", (req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
 });
 
 const initApp = () => {
@@ -45,7 +44,9 @@ const initApp = () => {
       reject("DATABASE_URL is undefined");
       return;
     }
-    const mongoTimeoutMs = Number(process.env.MONGO_CONNECT_TIMEOUT_MS || "5000");
+    const mongoTimeoutMs = Number(
+      process.env.MONGO_CONNECT_TIMEOUT_MS || "5000",
+    );
     mongoose
       .connect(dbUrl, {
         connectTimeoutMS: mongoTimeoutMs,
@@ -59,8 +60,8 @@ const initApp = () => {
           new Error(
             `Failed to connect to MongoDB within ${mongoTimeoutMs}ms. ` +
               `Check DATABASE_URL and that MongoDB is reachable. ` +
-              `Original error: ${error instanceof Error ? error.message : String(error)}`
-          )
+              `Original error: ${error instanceof Error ? error.message : String(error)}`,
+          ),
         );
       });
 
