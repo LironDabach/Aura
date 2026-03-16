@@ -36,23 +36,28 @@ class CommentsController extends baseController_1.default {
     }
     //Post a comment to a specific post
     createByPostId(req, res) {
-        const _super = Object.create(null, {
-            create: { get: () => super.create }
-        });
         return __awaiter(this, void 0, void 0, function* () {
             const postId = req.params.postId;
             if (req.user) {
                 req.body.userID = req.user._id; // Associate comment with user ID from token
             }
             req.body.postID = postId; // Associate comment with the post ID from URL
-            return _super.create.call(this, req, res);
+            try {
+                const newComment = yield this.model.create(req.body);
+                // Populate user info before returning
+                const populatedComment = yield this.model
+                    .findById(newComment._id)
+                    .populate("userID", "username");
+                res.status(201).json(populatedComment);
+            }
+            catch (err) {
+                console.error(err);
+                res.status(500).send("Error creating comment");
+            }
         });
     }
     // Update a comment for a specific post
     updateByPostId(req, res) {
-        const _super = Object.create(null, {
-            update: { get: () => super.update }
-        });
         return __awaiter(this, void 0, void 0, function* () {
             const commentId = req.params.commentId;
             const postId = req.params.postId;
@@ -79,8 +84,15 @@ class CommentsController extends baseController_1.default {
                         .send("Cannot change creator, associated post, or created date of the comment");
                     return;
                 }
-                req.params.id = commentId;
-                _super.update.call(this, req, res);
+                // Update and populate user info before returning
+                const updatedComment = yield this.model
+                    .findByIdAndUpdate(commentId, req.body, { new: true })
+                    .populate("userID", "username");
+                if (!updatedComment) {
+                    res.status(404).send("Comment not found");
+                    return;
+                }
+                res.status(200).json(updatedComment);
                 return;
             }
             catch (err) {

@@ -114,9 +114,10 @@ describe("Posts AI Search API", () => {
         expect(response.status).toBe(400);
     }));
     test("GET /api/post/search/ai handles humanized query with likes and comment threshold", () => __awaiter(void 0, void 0, void 0, function* () {
+        const uniqueKeyword = "apisignalzeta";
         const postWithSignals = yield postsModel_1.default.create({
             title: "api-search-test-threshold-hit",
-            body: "great travel guide",
+            body: `great travel guide ${uniqueKeyword}`,
             senderID,
             imageUrl: "https://example.com/hit.png",
             date: new Date(),
@@ -142,7 +143,7 @@ describe("Posts AI Search API", () => {
             },
         ]);
         llmResponseText = "not-json";
-        const response = yield (0, supertest_1.default)(app).get("/api/post/search/ai?q=please%20search%20for%20posts%20that%20contains%20at%20least%203%20likes%20and%20comment");
+        const response = yield (0, supertest_1.default)(app).get(`/api/post/search/ai?q=${encodeURIComponent(`please search for posts that contains at least 3 likes and comment and mention "${uniqueKeyword}"`)}`);
         expect(response.status).toBe(200);
         expect(response.body.source).toBe("fallback");
         expect(response.body.total).toBe(1);

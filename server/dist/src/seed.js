@@ -74,6 +74,7 @@ const seed = () => __awaiter(void 0, void 0, void 0, function* () {
             title: `${SEED_TAG} Post ${i + 1}`,
             body: `${SEED_TAG} Body for post ${i + 1}`,
             senderID: userIds[i % userIds.length],
+            imageUrl: `https://picsum.photos/seed/aura-seed-${i + 1}/640/360`,
         }));
         const createdPosts = yield postsModel_1.default.insertMany(postsToCreate);
         const commentsToCreate = Array.from({ length: 20 }, (_, i) => ({

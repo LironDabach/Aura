@@ -152,9 +152,10 @@ describe("SearchService", () => {
     }));
     test("supports humanized likes/comments constraint query", () => __awaiter(void 0, void 0, void 0, function* () {
         const senderID = new mongoose_1.default.Types.ObjectId();
+        const uniqueKeyword = "signalrichzeta";
         const matchingPost = yield postsModel_1.default.create({
             title: "ai-search-test-signal-rich",
-            body: "topic free body text",
+            body: `topic free body text ${uniqueKeyword}`,
             senderID,
             imageUrl: "https://example.com/e.png",
             date: new Date(),
@@ -181,7 +182,7 @@ describe("SearchService", () => {
         ]);
         llmResponseText = "invalid-json";
         const service = new searchService_1.SearchService(postsModel_1.default, new llmService_1.LlmService());
-        const result = yield service.searchPostsAi("please search for posts that contains at least 3 likes and comment", 1, 10);
+        const result = yield service.searchPostsAi(`please search for posts that contains at least 3 likes and comment and mention "${uniqueKeyword}"`, 1, 10);
         expect(result.source).toBe("fallback");
         expect(result.total).toBe(1);
         expect(result.posts[0]._id.toString()).toBe(matchingPost._id.toString());
@@ -189,9 +190,10 @@ describe("SearchService", () => {
     //implement humanized constraint test for date range (e.g. "posts from the last week") and for keyword presence (e.g. "posts that mention 'hiking' in the body")
     test("supports humanized date range constraint query", () => __awaiter(void 0, void 0, void 0, function* () {
         const senderID = new mongoose_1.default.Types.ObjectId();
+        const uniqueKeyword = "recentzetatag";
         const recentPost = yield postsModel_1.default.create({
             title: "ai-search-test-recent",
-            body: "topic free body text",
+            body: `topic free body text ${uniqueKeyword}`,
             senderID,
             imageUrl: "https://example.com/g.png",
             date: new Date(),
@@ -205,7 +207,7 @@ describe("SearchService", () => {
         });
         llmResponseText = "invalid-json";
         const service = new searchService_1.SearchService(postsModel_1.default, new llmService_1.LlmService());
-        const result = yield service.searchPostsAi("please search for posts from the last week", 1, 10);
+        const result = yield service.searchPostsAi(`please search for posts from the last week that mention "${uniqueKeyword}"`, 1, 10);
         expect(result.source).toBe("fallback");
         expect(result.total).toBe(1);
         expect(result.posts[0]._id.toString()).toBe(recentPost._id.toString());

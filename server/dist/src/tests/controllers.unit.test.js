@@ -173,13 +173,14 @@ describe("CommentsController unit", () => {
         expect(res.status).toHaveBeenCalledWith(400);
     }));
     test("updateByPostId succeeds for owner", () => __awaiter(void 0, void 0, void 0, function* () {
+        const populate = jest.fn().mockResolvedValue({ _id: "c1", content: "ok" });
         const model = {
             findById: jest.fn().mockResolvedValue({
                 userID: { toString: () => "u1" },
                 postID: { toString: () => "p1" },
                 date: new Date("2024-01-01T00:00:00.000Z"),
             }),
-            findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "c1", content: "ok" }),
+            findByIdAndUpdate: jest.fn().mockReturnValue({ populate }),
         };
         commentsController_1.default.model = model;
         const req = {
@@ -190,6 +191,7 @@ describe("CommentsController unit", () => {
         const res = makeRes();
         yield commentsController_1.default.updateByPostId(req, res);
         expect(model.findByIdAndUpdate).toHaveBeenCalledWith("c1", { content: "ok" }, { new: true });
+        expect(populate).toHaveBeenCalledWith("userID", "username");
         expect(res.json).toHaveBeenCalledWith({ _id: "c1", content: "ok" });
     }));
     test("delByPostId returns 500 on model failure", () => __awaiter(void 0, void 0, void 0, function* () {
