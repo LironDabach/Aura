@@ -2,6 +2,9 @@ import initApp from "./index";
 import http from "http";
 import https from "https";
 import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const port = process.env.PORT;
 const httpsPort = process.env.HTTPS_PORT;
