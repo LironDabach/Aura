@@ -6,7 +6,7 @@ module.exports = {
       cwd: "/home/node57/Aura/server",
       instances: 1,
       exec_mode: "fork",
-      env: {
+      env_production: {
         NODE_ENV: "production",
       },
     },
