@@ -31,7 +31,8 @@ app.use("/api/user", usersRoute_1.default);
 app.use("/api/upload", express_1.default.static("public/uploads"));
 app.use("/api/upload", multerRoute_1.default);
 // Serve React static files
-const distPath = path_1.default.resolve(__dirname, "../../client/dist");
+//const distPath = path.resolve(__dirname, "../../client/dist");
+const distPath = path_1.default.resolve(__dirname, '../../../client/dist/index.html');
 app.use(express_1.default.static(distPath));
 app.get("*", (req, res) => {
     res.sendFile(path_1.default.join(distPath, "index.html"));
