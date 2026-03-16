@@ -30,7 +30,8 @@ app.use("/api/upload", express.static("public/uploads"));
 app.use("/api/upload", multerRoute);
 
 // Serve React static files
-const distPath = path.resolve(process.cwd(), "../client/dist");
+const distPath = path.resolve(__dirname, "../../client/dist");
+
 app.use(express.static(distPath));
 
 app.get("*", (req, res) => {
