@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Axios instance with base URL for all API calls
-const api = axios.create({ baseURL: "http://localhost:3000" });
+const api = axios.create({ baseURL: "" });
 
 // Attach the JWT token to every outgoing request
 api.interceptors.request.use((config) => {
@@ -22,7 +22,9 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem("refreshToken");
       if (refreshToken) {
         try {
-          const { data } = await axios.post("http://localhost:3000/api/auth/refresh-token", { refreshToken });
+          const { data } = await axios.post("/api/auth/refresh-token", {
+            refreshToken,
+          });
           localStorage.setItem("token", data.token);
           localStorage.setItem("refreshToken", data.refreshToken);
           original.headers.Authorization = `Bearer ${data.token}`;
@@ -36,7 +38,7 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 type AuthTokens = { token: string; refreshToken: string };
@@ -50,17 +52,26 @@ type GoogleAuthResponse = AuthTokens & {
   };
 };
 
-export const register = async (data: { username: string; email: string; password: string }): Promise<GoogleAuthResponse> => {
+export const register = async (data: {
+  username: string;
+  email: string;
+  password: string;
+}): Promise<GoogleAuthResponse> => {
   const res = await api.post("/api/auth/register", data);
   return res.data;
 };
 
-export const login = async (data: { username: string; password: string }): Promise<GoogleAuthResponse> => {
+export const login = async (data: {
+  username: string;
+  password: string;
+}): Promise<GoogleAuthResponse> => {
   const res = await api.post("/api/auth/login", data);
   return res.data;
 };
 
-export const googleLogin = async (credential: string): Promise<GoogleAuthResponse> => {
+export const googleLogin = async (
+  credential: string,
+): Promise<GoogleAuthResponse> => {
   const res = await api.post("/api/auth/google", { credential });
   return res.data;
 };
@@ -70,8 +81,7 @@ export const logout = async (): Promise<void> => {
   if (refreshToken) {
     try {
       await api.post("/api/auth/logout", { refreshToken });
-    } catch {
-    }
+    } catch {}
   }
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
