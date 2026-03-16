@@ -28,14 +28,13 @@ app.use("/api/comment", commentsRoute_1.default);
 app.use("/api/like", likesRoute_1.default);
 app.use("/api/auth", authRoute_1.default);
 app.use("/api/user", usersRoute_1.default);
-app.use('/api/upload', express_1.default.static('public/uploads'));
+app.use("/api/upload", express_1.default.static("public/uploads"));
 app.use("/api/upload", multerRoute_1.default);
-// Serve React static files from dist
-const distPath = path_1.default.resolve(process.cwd(), "../client/dist");
+// Serve React static files
+const distPath = path_1.default.resolve(__dirname, "../../client/dist");
 app.use(express_1.default.static(distPath));
-// 404 handler for all unmatched routes
-app.use((req, res) => {
-    res.status(404).json({ error: "Not Found" });
+app.get("*", (req, res) => {
+    res.sendFile(path_1.default.join(distPath, "index.html"));
 });
 const initApp = () => {
     const pr = new Promise((resolve, reject) => {

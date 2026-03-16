@@ -28,6 +28,9 @@ describe("Swagger and initApp", () => {
         const response = yield (0, supertest_1.default)(app).get("/api-docs.json");
         expect(response.status).toBe(200);
         expect(response.headers["content-type"]).toMatch(/application\/json/);
+        expect(response.body.servers).toEqual([
+            expect.objectContaining({ url: "/" }),
+        ]);
     }));
     test("initApp rejects when DATABASE_URL is missing", () => __awaiter(void 0, void 0, void 0, function* () {
         const originalUrl = process.env.DATABASE_URL;

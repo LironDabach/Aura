@@ -7,6 +7,8 @@ const index_1 = __importDefault(require("./index"));
 const http_1 = __importDefault(require("http"));
 const https_1 = __importDefault(require("https"));
 const fs_1 = __importDefault(require("fs"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const port = process.env.PORT;
 const httpsPort = process.env.HTTPS_PORT;
 (0, index_1.default)()

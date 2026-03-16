@@ -4,9 +4,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import path from "path";
 
 const buildSwaggerSpec = () => {
-  const port = process.env.PORT || "3000";
-  const serverUrl =
-    process.env.SWAGGER_SERVER_URL || `http://localhost:${port}`;
+  const serverUrl = process.env.SWAGGER_SERVER_URL || "/";
 
   const apis = [
     path.join(process.cwd(), "src", "routes", "*.ts"),
@@ -25,7 +23,7 @@ const buildSwaggerSpec = () => {
       servers: [
         {
           url: serverUrl,
-          description: "Local server",
+          description: "Current server",
         },
       ],
       tags: [

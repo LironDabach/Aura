@@ -20,6 +20,9 @@ describe("Swagger and initApp", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/application\/json/);
+    expect(response.body.servers).toEqual([
+      expect.objectContaining({ url: "/" }),
+    ]);
   });
 
   test("initApp rejects when DATABASE_URL is missing", async () => {

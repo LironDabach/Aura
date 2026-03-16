@@ -8,8 +8,7 @@ const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const path_1 = __importDefault(require("path"));
 const buildSwaggerSpec = () => {
-    const port = process.env.PORT || "3000";
-    const serverUrl = process.env.SWAGGER_SERVER_URL || `http://localhost:${port}`;
+    const serverUrl = process.env.SWAGGER_SERVER_URL || "/";
     const apis = [
         path_1.default.join(process.cwd(), "src", "routes", "*.ts"),
         path_1.default.join(__dirname, "routes", "*.js"),
@@ -25,7 +24,7 @@ const buildSwaggerSpec = () => {
             servers: [
                 {
                     url: serverUrl,
-                    description: "Local server",
+                    description: "Current server",
                 },
             ],
             tags: [
