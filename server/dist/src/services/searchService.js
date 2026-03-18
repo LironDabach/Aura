@@ -45,6 +45,8 @@ class SearchService {
         const lower = normalized.toLowerCase();
         const quotedKeywordMatch = normalized.match(/["']([^"']{1,120})["']/);
         const explicitKeyword = (_a = quotedKeywordMatch === null || quotedKeywordMatch === void 0 ? void 0 : quotedKeywordMatch[1]) === null || _a === void 0 ? void 0 : _a.trim();
+        const wantsMostLiked = /\b(?:most liked|top liked|highest liked|most likes|highest likes)\b/.test(lower);
+        const wantsMostCommented = /\b(?:most commented|top commented|most comments|highest comments)\b/.test(lower);
         const minLikesMatch = lower.match(/(?:at least|min)\s+(\d+)\s+likes?/) ||
             lower.match(/(\d+)\s*\+?\s*likes?/);
         const minCommentsMatch = lower.match(/(?:at least|min)\s+(\d+)\s+comments?/) ||
@@ -88,10 +90,56 @@ class SearchService {
         return {
             normalizedQuery: normalized,
             textQuery: explicitKeyword || withoutCountPhrases,
+            explicitKeyword,
             minLikes,
             minComments,
             earliestDate,
+            wantsMostLiked,
+            wantsMostCommented,
         };
+    }
+    buildExactKeywordRegex(keyword) {
+        const escaped = escapeRegex(keyword.trim());
+        if (!escaped) {
+            return null;
+        }
+        if (!/\s/.test(keyword.trim())) {
+            return new RegExp(`\\b${escaped}\\b`, "i");
+        }
+        const normalizedPhrase = escaped.replace(/\s+/g, "\\s+");
+        return new RegExp(normalizedPhrase, "i");
+    }
+    sortCandidates(posts, countsByPostId, mode) {
+        const getCounts = (post) => countsByPostId.get(post._id.toString()) || { likes: 0, comments: 0 };
+        return [...posts].sort((a, b) => {
+            const aCounts = getCounts(a);
+            const bCounts = getCounts(b);
+            if (mode === "mostLiked") {
+                if (bCounts.likes !== aCounts.likes) {
+                    return bCounts.likes - aCounts.likes;
+                }
+                if (bCounts.comments !== aCounts.comments) {
+                    return bCounts.comments - aCounts.comments;
+                }
+            }
+            else if (mode === "mostCommented") {
+                if (bCounts.comments !== aCounts.comments) {
+                    return bCounts.comments - aCounts.comments;
+                }
+                if (bCounts.likes !== aCounts.likes) {
+                    return bCounts.likes - aCounts.likes;
+                }
+            }
+            else if (mode === "signals") {
+                if (bCounts.likes !== aCounts.likes) {
+                    return bCounts.likes - aCounts.likes;
+                }
+                if (bCounts.comments !== aCounts.comments) {
+                    return bCounts.comments - aCounts.comments;
+                }
+            }
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
     }
     buildPrompt(query, candidates, countsByPostId) {
         const compactCandidates = candidates.map((post) => {
@@ -168,13 +216,11 @@ class SearchService {
             }
             const safePage = Math.max(1, page || 1);
             const safeLimit = Math.max(1, limit || 5);
-            const candidateLimit = Math.max(40, safeLimit * 8);
-            const recentPosts = yield this.postModel
+            const allPosts = yield this.postModel
                 .find()
                 .populate("senderID", "username profilePicture")
-                .sort({ date: -1 })
-                .limit(candidateLimit);
-            if (!recentPosts.length) {
+                .sort({ date: -1 });
+            if (!allPosts.length) {
                 return {
                     posts: [],
                     page: safePage,
@@ -183,7 +229,7 @@ class SearchService {
                     source: "llm",
                 };
             }
-            const postIds = recentPosts.map((post) => post._id);
+            const postIds = allPosts.map((post) => post._id);
             const [likesAgg, commentsAgg] = yield Promise.all([
                 this.likes.aggregate([
                     { $match: { postID: { $in: postIds } } },
@@ -203,14 +249,17 @@ class SearchService {
                 commentsByPostId.set(row._id.toString(), row.count);
             });
             const countsByPostId = new Map();
-            recentPosts.forEach((post) => {
+            allPosts.forEach((post) => {
                 const id = post._id.toString();
                 countsByPostId.set(id, {
                     likes: likesByPostId.get(id) || 0,
                     comments: commentsByPostId.get(id) || 0,
                 });
             });
-            const candidates = recentPosts.filter((post) => {
+            const exactKeywordRegex = parsed.explicitKeyword
+                ? this.buildExactKeywordRegex(parsed.explicitKeyword)
+                : null;
+            const candidates = allPosts.filter((post) => {
                 const counts = countsByPostId.get(post._id.toString()) || { likes: 0, comments: 0 };
                 if (counts.likes < parsed.minLikes) {
                     return false;
@@ -221,6 +270,12 @@ class SearchService {
                 if (parsed.earliestDate && new Date(post.date).getTime() < parsed.earliestDate.getTime()) {
                     return false;
                 }
+                if (exactKeywordRegex) {
+                    const haystack = `${post.title || ""} ${post.body || ""}`;
+                    if (!exactKeywordRegex.test(haystack)) {
+                        return false;
+                    }
+                }
                 return true;
             });
             if (!candidates.length) {
@@ -229,6 +284,39 @@ class SearchService {
                     page: safePage,
                     totalPages: 0,
                     total: 0,
+                    source: "fallback",
+                };
+            }
+            if (parsed.wantsMostLiked ||
+                parsed.wantsMostCommented ||
+                parsed.minLikes > 0 ||
+                parsed.minComments > 0 ||
+                parsed.earliestDate ||
+                parsed.explicitKeyword) {
+                let deterministicPosts = candidates;
+                if (parsed.wantsMostLiked) {
+                    const maxLikes = Math.max(...candidates.map((post) => { var _a; return ((_a = countsByPostId.get(post._id.toString())) === null || _a === void 0 ? void 0 : _a.likes) || 0; }));
+                    deterministicPosts = candidates.filter((post) => { var _a; return (((_a = countsByPostId.get(post._id.toString())) === null || _a === void 0 ? void 0 : _a.likes) || 0) === maxLikes; });
+                }
+                else if (parsed.wantsMostCommented) {
+                    const maxComments = Math.max(...candidates.map((post) => { var _a; return ((_a = countsByPostId.get(post._id.toString())) === null || _a === void 0 ? void 0 : _a.comments) || 0; }));
+                    deterministicPosts = candidates.filter((post) => { var _a; return (((_a = countsByPostId.get(post._id.toString())) === null || _a === void 0 ? void 0 : _a.comments) || 0) === maxComments; });
+                }
+                const sortMode = parsed.wantsMostLiked
+                    ? "mostLiked"
+                    : parsed.wantsMostCommented
+                        ? "mostCommented"
+                        : parsed.minLikes > 0 || parsed.minComments > 0
+                            ? "signals"
+                            : "recent";
+                const sortedPosts = this.sortCandidates(deterministicPosts, countsByPostId, sortMode);
+                const total = sortedPosts.length;
+                const start = (safePage - 1) * safeLimit;
+                return {
+                    posts: sortedPosts.slice(start, start + safeLimit),
+                    page: safePage,
+                    totalPages: Math.ceil(total / safeLimit),
+                    total,
                     source: "fallback",
                 };
             }
@@ -245,6 +333,9 @@ class SearchService {
                     },
                 });
                 const rankedIds = this.parseRankedIds(response.response, validIds);
+                if (!rankedIds.length && parsed.textQuery) {
+                    return this.regexFallback(parsed.textQuery, safePage, safeLimit, candidates.map((post) => post._id.toString()));
+                }
                 const rankedPosts = rankedIds
                     .map((id) => candidates.find((post) => post._id.toString() === id))
                     .filter(Boolean);

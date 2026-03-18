@@ -148,6 +148,117 @@ describe("SearchService", () => {
     expect(result.posts[0].title).toBe("ai-search-test-regex-hit");
   });
 
+  test("returns only the top commented posts for most commented queries", async () => {
+    const senderID = new mongoose.Types.ObjectId();
+    const topPost = await postsModel.create({
+      title: "ai-search-test-most-commented-top",
+      body: "alpha body",
+      senderID,
+      imageUrl: "https://example.com/top-comments.png",
+      date: new Date(),
+    });
+    const lowerPost = await postsModel.create({
+      title: "ai-search-test-most-commented-lower",
+      body: "beta body",
+      senderID,
+      imageUrl: "https://example.com/lower-comments.png",
+      date: new Date(Date.now() + 1000),
+    });
+
+    await commentsModel.create([
+      { postID: topPost._id, userID: new mongoose.Types.ObjectId(), content: "1" },
+      { postID: topPost._id, userID: new mongoose.Types.ObjectId(), content: "2" },
+      { postID: topPost._id, userID: new mongoose.Types.ObjectId(), content: "3" },
+      { postID: lowerPost._id, userID: new mongoose.Types.ObjectId(), content: "only one" },
+    ]);
+
+    llmResponseText = JSON.stringify({
+      postIds: [lowerPost._id.toString(), topPost._id.toString()],
+    });
+
+    const service = new SearchService(postsModel, new LlmService());
+    const result = await service.searchPostsAi("give me the most commented posts", 1, 10);
+
+    expect(result.source).toBe("fallback");
+    expect(result.total).toBe(1);
+    expect(result.posts[0]._id.toString()).toBe(topPost._id.toString());
+  });
+
+  test("returns all posts that satisfy at least 2 likes", async () => {
+    const senderID = new mongoose.Types.ObjectId();
+    const firstMatching = await postsModel.create({
+      title: "ai-search-test-likes-threshold-first",
+      body: "alpha likes body",
+      senderID,
+      imageUrl: "https://example.com/likes-first.png",
+      date: new Date(),
+    });
+    const secondMatching = await postsModel.create({
+      title: "ai-search-test-likes-threshold-second",
+      body: "beta likes body",
+      senderID,
+      imageUrl: "https://example.com/likes-second.png",
+      date: new Date(Date.now() + 1000),
+    });
+    const nonMatching = await postsModel.create({
+      title: "ai-search-test-likes-threshold-miss",
+      body: "gamma likes body",
+      senderID,
+      imageUrl: "https://example.com/likes-miss.png",
+      date: new Date(Date.now() + 2000),
+    });
+
+    await likesModel.create([
+      { postID: firstMatching._id, senderID: new mongoose.Types.ObjectId() },
+      { postID: firstMatching._id, senderID: new mongoose.Types.ObjectId() },
+      { postID: secondMatching._id, senderID: new mongoose.Types.ObjectId() },
+      { postID: secondMatching._id, senderID: new mongoose.Types.ObjectId() },
+      { postID: secondMatching._id, senderID: new mongoose.Types.ObjectId() },
+      { postID: nonMatching._id, senderID: new mongoose.Types.ObjectId() },
+    ]);
+
+    llmResponseText = JSON.stringify({
+      postIds: [secondMatching._id.toString()],
+    });
+
+    const service = new SearchService(postsModel, new LlmService());
+    const result = await service.searchPostsAi("posts that have at least 2 likes", 1, 10);
+
+    expect(result.source).toBe("fallback");
+    expect(result.total).toBe(2);
+    expect(result.posts.map((post) => post._id.toString())).toEqual([
+      secondMatching._id.toString(),
+      firstMatching._id.toString(),
+    ]);
+  });
+
+  test("returns quoted single-word matches even for common words like of", async () => {
+    const senderID = new mongoose.Types.ObjectId();
+    const matchingPost = await postsModel.create({
+      title: "ai-search-test-word-of",
+      body: "the city of gold",
+      senderID,
+      imageUrl: "https://example.com/of-hit.png",
+      date: new Date(),
+    });
+    await postsModel.create({
+      title: "ai-search-test-word-office",
+      body: "office stories only",
+      senderID,
+      imageUrl: "https://example.com/of-miss.png",
+      date: new Date(Date.now() + 1000),
+    });
+
+    llmResponseText = '{"postIds":[]}';
+
+    const service = new SearchService(postsModel, new LlmService());
+    const result = await service.searchPostsAi('give me the posts that contain the word "of"', 1, 10);
+
+    expect(result.source).toBe("fallback");
+    expect(result.total).toBe(1);
+    expect(result.posts[0]._id.toString()).toBe(matchingPost._id.toString());
+  });
+
   test("throws validation error when query is empty", async () => {
     const service = new SearchService(postsModel, new LlmService());
     await expect(service.searchPostsAi("   ", 1, 5)).rejects.toBeInstanceOf(
