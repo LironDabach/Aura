@@ -48,9 +48,10 @@ function Feed() {
     const fetchFeed = async () => {
       try {
         const data = await getPosts(1);
-        setPosts(data.posts);
-        setHasMore(data.page < data.totalPages);
-        const newMeta = await fetchMeta(data.posts);
+        const safePosts = Array.isArray(data.posts) ? data.posts : [];
+        setPosts(safePosts);
+        setHasMore((data.page ?? 1) < (data.totalPages ?? 1));
+        const newMeta = await fetchMeta(safePosts);
         setMeta(newMeta);
       } catch (err) {
         console.error("Failed to load feed", err);
@@ -67,10 +68,11 @@ function Feed() {
     try {
       const nextPage = page + 1;
       const data = await getPosts(nextPage);
-      setPosts((prev) => [...prev, ...data.posts]);
+      const safePosts = Array.isArray(data.posts) ? data.posts : [];
+      setPosts((prev) => [...prev, ...safePosts]);
       setPage(nextPage);
-      setHasMore(data.page < data.totalPages);
-      const newMeta = await fetchMeta(data.posts);
+      setHasMore((data.page ?? 1) < (data.totalPages ?? 1));
+      const newMeta = await fetchMeta(safePosts);
       setMeta((prev) => ({ ...prev, ...newMeta }));
     } catch (err) {
       console.error("Failed to load more posts", err);

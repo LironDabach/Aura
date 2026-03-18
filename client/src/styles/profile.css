@@ -123,6 +123,107 @@
   gap: 8px;
 }
 
+.profile-username-edit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.profile-username-edit-input {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 18px;
+  font-family: inherit;
+  font-weight: 600;
+  border: 2px solid #6366f1;
+  border-radius: 8px;
+  outline: none;
+  color: #111;
+  background: #fafbff;
+  transition: border-color 0.2s;
+}
+
+.profile-username-edit-input:focus {
+  border-color: #8b5cf6;
+  background: #fff;
+}
+
+.profile-username-edit-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-username-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-username-save-btn {
+  padding: 5px 16px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.profile-username-save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.profile-username-save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.profile-username-cancel-btn {
+  padding: 5px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.profile-username-cancel-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.profile-username-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profile-btn-edit-username {
+  background: none;
+  border: 1px solid transparent;
+  font-size: 16px;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.profile-btn-edit-username:hover {
+  color: #6366f1;
+  background: #f0f0ff;
+  border-color: #e0e7ff;
+}
+
 .profile-username {
   margin: 0;
   font-size: 20px;

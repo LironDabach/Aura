@@ -71,7 +71,14 @@ const register = async (req: Request, res: Response) => {
         profilePicture: user.profilePicture,
       },
     });
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.code === 11000) {
+      const field = Object.keys(err.keyPattern || {})[0];
+      if (field === "email") {
+        return sendError(400, "Email already exists", res);
+      }
+      return sendError(400, "Username already exists", res);
+    }
     return sendError(500, "Internal server error", res);
   }
 };

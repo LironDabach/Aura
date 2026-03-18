@@ -15,6 +15,9 @@ type PostMeta = {
 // Profile page — shows user info, avatar management, and their posts
 function Profile() {
   const [user, setUser] = useState<User | null>(null);
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [savingUsername, setSavingUsername] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,10 +50,11 @@ function Profile() {
           getPostsByUser(currentUserId).catch(() => []),
         ]);
         setUser(userData);
-        setPosts(userPosts);
+        const safePosts = Array.isArray(userPosts) ? userPosts : [];
+        setPosts(safePosts);
 
         const metaEntries = await Promise.all(
-          userPosts.map(async (p: Post) => {
+          safePosts.map(async (p: Post) => {
             const [likes, comments] = await Promise.all([
               getLikesForPost(p._id).catch(() => []),
               getCommentsForPost(p._id).catch(() => []),
@@ -197,6 +201,45 @@ function Profile() {
     return <div className="profile-loading">User not found.</div>;
   }
 
+  const handleEditUsername = () => {
+    setEditingUsername(true);
+    setNewUsername(user?.username || "");
+    setError("");
+  };
+
+  const handleCancelEditUsername = () => {
+    setEditingUsername(false);
+    setNewUsername("");
+    setError("");
+  };
+
+  const handleSaveUsername = async () => {
+    if (!user) return;
+    if (!newUsername.trim() || newUsername === user.username) {
+      setEditingUsername(false);
+      return;
+    }
+    setSavingUsername(true);
+    setError("");
+    try {
+      const updated = await updateUser(user._id, { username: newUsername.trim() });
+      setUser(updated);
+      setEditingUsername(false);
+      // עדכון localStorage
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      stored.username = updated.username;
+      localStorage.setItem("user", JSON.stringify(stored));
+    } catch (err: any) {
+      if (err.response?.data?.includes("username or email already exists")) {
+        setError("Username is already taken. Please choose another.");
+      } else {
+        setError(err.response?.data || "Failed to update username.");
+      }
+    } finally {
+      setSavingUsername(false);
+    }
+  };
+
   return (
     <div className="profile-page">
       {error && <div className="profile-error">{error}</div>}
@@ -208,7 +251,9 @@ function Profile() {
               <img src={user.profilePicture} alt={user.username} className="profile-avatar-img" />
             ) : (
               <div className="profile-avatar-placeholder">
-                {user.username.charAt(0).toUpperCase()}
+                {(user.username && typeof user.username === "string" && user.username.length > 0)
+                  ? user.username.charAt(0).toUpperCase()
+                  : "?"}
               </div>
             )}
             <div className="profile-avatar-overlay">
@@ -236,7 +281,45 @@ function Profile() {
 
         <div className="profile-info">
           <div className="profile-name-row">
-            <h2 className="profile-username">{user.username}</h2>
+            {editingUsername ? (
+              <div className="profile-username-edit-row">
+                <input
+                  className="profile-username-edit-input"
+                  value={newUsername}
+                  onChange={e => setNewUsername(e.target.value)}
+                  disabled={savingUsername}
+                  maxLength={32}
+                  autoFocus
+                />
+                <div className="profile-username-edit-actions">
+                  <button
+                    className="profile-username-save-btn"
+                    onClick={handleSaveUsername}
+                    disabled={savingUsername || !newUsername.trim() || newUsername === user.username}
+                  >
+                    {savingUsername ? "Saving…" : "Save"}
+                  </button>
+                  <button
+                    className="profile-username-cancel-btn"
+                    onClick={handleCancelEditUsername}
+                    disabled={savingUsername}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h2 className="profile-username">{user.username}</h2>
+                <button
+                  className="profile-btn-edit-username"
+                  onClick={handleEditUsername}
+                  title="Edit username"
+                >
+                  ✎
+                </button>
+              </>
+            )}
           </div>
           <span className="profile-email">{user.email}</span>
           <span className="profile-post-count">{posts.length} post{posts.length !== 1 ? "s" : ""}</span>
@@ -245,11 +328,11 @@ function Profile() {
 
       <h3 className="profile-section-title">My Posts ({posts.length})</h3>
 
-      {posts.length === 0 ? (
+      {Array.isArray(posts) && posts.length === 0 ? (
         <p className="profile-no-posts">You haven't posted anything yet.</p>
       ) : (
         <div className="profile-posts-grid">
-          {posts.map((post) => (
+          {(Array.isArray(posts) ? posts : []).map((post) => (
             <div key={post._id} className="profile-post-card">
               {editingPostId === post._id ? (
                 <div className="profile-post-edit">
