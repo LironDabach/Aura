@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Post } from "../types/post";
 import { likePost, unlikePost } from "../services/posts";
 
@@ -21,6 +21,14 @@ function PostCard({
   const [liked, setLiked] = useState(initialIsLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [animating, setAnimating] = useState(false);
+
+  useEffect(() => {
+    setLiked(initialIsLiked);
+  }, [initialIsLiked]);
+
+  useEffect(() => {
+    setLikeCount(initialLikeCount);
+  }, [initialLikeCount]);
 
   const sender = typeof post.senderID === "object" ? post.senderID : null;
   const username = sender?.username ?? "unknown";
