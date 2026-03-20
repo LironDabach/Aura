@@ -64,6 +64,13 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             } }));
     }
     catch (err) {
+        if ((err === null || err === void 0 ? void 0 : err.code) === 11000) {
+            const field = Object.keys(err.keyPattern || {})[0];
+            if (field === "email") {
+                return sendError(400, "Email already exists", res);
+            }
+            return sendError(400, "Username already exists", res);
+        }
         return sendError(500, "Internal server error", res);
     }
 });
