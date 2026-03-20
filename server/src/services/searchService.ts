@@ -18,8 +18,31 @@ type SearchResult = {
   source: "llm" | "fallback";
 };
 
+type ParsedQuery = {
+  normalizedQuery: string;
+  textQuery: string;
+  semanticFocus: string;
+  explicitKeyword?: string;
+  minLikes: number;
+  minComments: number;
+  earliestDate?: Date;
+  wantsMostLiked: boolean;
+  wantsMostCommented: boolean;
+};
+
+type RankedMatch = {
+  postId: string;
+  score: number;
+};
+
 const escapeRegex = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const SEMANTIC_STOP_WORDS = new Set([
+  "a", "an", "and", "any", "anything", "are", "as", "at", "be", "by", "find",
+  "for", "from", "get", "give", "i", "in", "is", "me", "of", "on", "or", "please",
+  "post", "posts", "related", "search", "show", "that", "the", "to", "want", "with",
+]);
 
 class SearchService {
   private postModel: typeof postsModel;
@@ -41,7 +64,22 @@ class SearchService {
     return safe.slice(0, 300);
   }
 
-  private parseHumanConstraints(query: string) {
+  private buildSemanticFocus(value: string) {
+    const normalized = value
+      .toLowerCase()
+      .replace(/[^\w\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const tokens = normalized
+      .split(" ")
+      .map((token) => token.trim())
+      .filter((token) => token.length >= 3 && !SEMANTIC_STOP_WORDS.has(token));
+
+    return tokens.join(" ");
+  }
+
+  private parseHumanConstraints(query: string): ParsedQuery {
     const normalized = this.normalizeInput(query);
     const lower = normalized.toLowerCase();
     const quotedKeywordMatch = normalized.match(/["']([^"']{1,120})["']/);
@@ -98,9 +136,12 @@ class SearchService {
       .replace(/\s+/g, " ")
       .trim();
 
+    const semanticFocus = this.buildSemanticFocus(explicitKeyword || withoutCountPhrases);
+
     return {
       normalizedQuery: normalized,
       textQuery: explicitKeyword || withoutCountPhrases,
+      semanticFocus,
       explicitKeyword,
       minLikes,
       minComments,
@@ -163,7 +204,11 @@ class SearchService {
     });
   }
 
-  private buildPrompt(query: string, candidates: any[], countsByPostId: Map<string, { likes: number; comments: number }>) {
+  private buildPrompt(
+    parsedQuery: ParsedQuery,
+    candidates: any[],
+    countsByPostId: Map<string, { likes: number; comments: number }>
+  ) {
     const compactCandidates = candidates.map((post) => ({
       id: post._id.toString(),
       title: post.title,
@@ -174,33 +219,54 @@ class SearchService {
 
     return [
       "You rank social media posts for search relevance.",
-      `Query: "${query}"`,
+      `User query: "${parsedQuery.normalizedQuery}"`,
+      `Core topic: "${parsedQuery.semanticFocus || parsedQuery.textQuery || parsedQuery.normalizedQuery}"`,
       "Return strict JSON only, with schema:",
-      '{"postIds":["id1","id2"]}',
+      '{"matches":[{"postId":"id1","score":0.0,"reason":"short reason"}]}',
       "Rules:",
       "1) Include only IDs from candidates.",
-      "2) Sort by best match first.",
-      "3) Return up to 20 ids.",
+      "2) Include only strong matches with a direct topical or semantic connection to the core topic.",
+      "3) Exclude weak, generic, speculative, or popularity-based matches.",
+      "4) If a post has no clear text evidence and no close semantic relation, do not include it.",
+      "5) Prefer precision over recall. If uncertain, leave the post out.",
+      "6) Return at most 20 matches sorted by score descending.",
+      "7) If nothing is clearly relevant, return an empty matches array.",
       `Candidates: ${JSON.stringify(compactCandidates)}`,
     ].join("\n");
   }
 
-  private parseRankedIds(rawResponse: string, validIds: Set<string>) {
+  private parseRankedMatches(rawResponse: string, validIds: Set<string>) {
     const parsed = JSON.parse(rawResponse);
-    const ids = Array.isArray(parsed?.postIds) ? parsed.postIds : [];
-    const rankedIds: string[] = [];
+    const matches = Array.isArray(parsed?.matches) ? parsed.matches : [];
+    const rankedMatches: RankedMatch[] = [];
+    const seenIds = new Set<string>();
 
-    for (const id of ids) {
-      if (typeof id !== "string") {
+    for (const match of matches) {
+      const postId = typeof match?.postId === "string" ? match.postId : "";
+      const score =
+        typeof match?.score === "number" && Number.isFinite(match.score) ? match.score : 0;
+      if (!postId || !validIds.has(postId) || seenIds.has(postId)) {
         continue;
       }
-      if (!validIds.has(id) || rankedIds.includes(id)) {
+      if (score < 0.6) {
         continue;
       }
-      rankedIds.push(id);
+      seenIds.add(postId);
+      rankedMatches.push({ postId, score });
     }
 
-    return rankedIds;
+    // Backward compatibility for older responses.
+    if (!rankedMatches.length && Array.isArray(parsed?.postIds)) {
+      for (const id of parsed.postIds) {
+        if (typeof id !== "string" || !validIds.has(id) || seenIds.has(id)) {
+          continue;
+        }
+        seenIds.add(id);
+        rankedMatches.push({ postId: id, score: 1 });
+      }
+    }
+
+    return rankedMatches;
   }
 
   private async regexFallback(
@@ -372,7 +438,7 @@ class SearchService {
     }
 
     const validIds = new Set(candidates.map((post) => post._id.toString()));
-    const prompt = this.buildPrompt(parsed.normalizedQuery, candidates, countsByPostId);
+    const prompt = this.buildPrompt(parsed, candidates, countsByPostId);
 
     try {
       const response = await this.llm.generate({
@@ -385,8 +451,8 @@ class SearchService {
         },
       });
 
-      const rankedIds = this.parseRankedIds(response.response, validIds);
-      if (!rankedIds.length && parsed.textQuery) {
+      const rankedMatches = this.parseRankedMatches(response.response, validIds);
+      if (!rankedMatches.length && parsed.textQuery) {
         return this.regexFallback(
           parsed.textQuery,
           safePage,
@@ -394,8 +460,8 @@ class SearchService {
           candidates.map((post) => post._id.toString()),
         );
       }
-      const rankedPosts = rankedIds
-        .map((id) => candidates.find((post) => post._id.toString() === id))
+      const rankedPosts = rankedMatches
+        .map((match) => candidates.find((post) => post._id.toString() === match.postId))
         .filter(Boolean) as any[];
 
       const total = rankedPosts.length;
